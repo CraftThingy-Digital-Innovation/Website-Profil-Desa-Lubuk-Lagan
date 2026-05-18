@@ -6,6 +6,7 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'Home::index');
+$routes->get('baca/(:segment)', 'Home::read_blog/$1');
 
 // Routes untuk File Manager (Admin)
 $routes->group('admin/file-manager', function($routes) {
