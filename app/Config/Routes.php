@@ -5,6 +5,10 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
+
+// =====================
+// PUBLIC ROUTES
+// =====================
 $routes->get('/', 'Home::index');
 $routes->get('baca/(:segment)', 'Home::read_blog/$1');
 $routes->get('sejarah', 'Home::sejarah');
@@ -12,14 +16,14 @@ $routes->get('perangkat', 'Home::perangkat');
 $routes->get('kkn-107', 'Home::kkn');
 $routes->get('berita', 'Home::blog_list');
 
-// Routes untuk File Manager (Admin)
-$routes->group('admin/file-manager', function($routes) {
-    $routes->get('/', 'FileManagerController::index');
-    $routes->post('upload', 'FileManagerController::upload');
-    $routes->delete('delete/(:num)', 'FileManagerController::delete/$1');
-});
+// =====================
+// ADMIN ROUTES (dilindungi oleh BaseAdminController)
+// =====================
 
-// Routes untuk Blog (Admin)
+// Dashboard
+$routes->get('admin/dashboard', 'DashboardController::index');
+
+// Blog
 $routes->group('admin/blog', function($routes) {
     $routes->get('/', 'BlogController::index');
     $routes->get('create', 'BlogController::create_draft');
@@ -28,7 +32,14 @@ $routes->group('admin/blog', function($routes) {
     $routes->get('delete/(:num)', 'BlogController::delete/$1');
 });
 
-// Routes untuk Map (Admin)
+// File Manager
+$routes->group('admin/file-manager', function($routes) {
+    $routes->get('/', 'FileManagerController::index');
+    $routes->post('upload', 'FileManagerController::upload');
+    $routes->delete('delete/(:num)', 'FileManagerController::delete/$1');
+});
+
+// Map
 $routes->group('admin/map', function($routes) {
     $routes->get('/', 'MapController::index');
     $routes->get('create', 'MapController::create');
@@ -37,4 +48,10 @@ $routes->group('admin/map', function($routes) {
     $routes->get('delete/(:num)', 'MapController::delete/$1');
 });
 
+// Redirect /admin ke dashboard
+$routes->get('admin', function() { return redirect()->to('admin/dashboard'); });
+
+// =====================
+// AUTH ROUTES (CI4 Shield)
+// =====================
 service('auth')->routes($routes);

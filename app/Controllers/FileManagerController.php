@@ -2,12 +2,9 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use CodeIgniter\HTTP\ResponseInterface;
-
 use App\Models\FileManagerModel;
 
-class FileManagerController extends BaseController
+class FileManagerController extends BaseAdminController
 {
     public function index()
     {

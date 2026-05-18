@@ -2,12 +2,9 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use CodeIgniter\HTTP\ResponseInterface;
-
 use App\Models\BlogModel;
 
-class BlogController extends BaseController
+class BlogController extends BaseAdminController
 {
     public function index()
     {
