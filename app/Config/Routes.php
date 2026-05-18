@@ -51,6 +51,16 @@ $routes->group('admin/map', function($routes) {
 // Redirect /admin ke dashboard
 $routes->get('admin', function() { return redirect()->to('admin/dashboard'); });
 
+// Users (Superadmin only — guard ada di controller)
+$routes->group('admin/users', function($routes) {
+    $routes->get('/',              'UserManagementController::index');
+    $routes->get('create',         'UserManagementController::create');
+    $routes->post('store',         'UserManagementController::store');
+    $routes->get('edit/(:num)',    'UserManagementController::edit/$1');
+    $routes->post('update/(:num)', 'UserManagementController::update/$1');
+    $routes->get('delete/(:num)',  'UserManagementController::delete/$1');
+});
+
 // =====================
 // AUTH ROUTES (CI4 Shield)
 // =====================
