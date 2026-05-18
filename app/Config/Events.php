@@ -54,7 +54,7 @@ Events::on('pre_system', static function (): void {
     }
 });
 
-Events::on('post_controller_constructor', static function () {
+Events::on('pre_system', static function () {
     if (ENVIRONMENT === 'development' && !is_cli()) {
         try {
             // Auto Create Database
