@@ -14,4 +14,13 @@ $routes->group('admin/file-manager', function($routes) {
     $routes->delete('delete/(:num)', 'FileManagerController::delete/$1');
 });
 
+// Routes untuk Blog (Admin)
+$routes->group('admin/blog', function($routes) {
+    $routes->get('/', 'BlogController::index');
+    $routes->get('create', 'BlogController::create_draft');
+    $routes->get('edit/(:num)', 'BlogController::edit/$1');
+    $routes->post('autosave', 'BlogController::autosave');
+    $routes->get('delete/(:num)', 'BlogController::delete/$1');
+});
+
 service('auth')->routes($routes);
