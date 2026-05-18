@@ -1,72 +1,79 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peta & Lokasi Desa - Desa Lubuk Lagan</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 p-8 font-sans">
+<?= $this->extend('layout/admin') ?>
+<?= $this->section('admin_content') ?>
 
-<div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Manajemen Lokasi & Peta Interaktif</h1>
-        <a href="<?= base_url('admin/map/create') ?>" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow">
-            + Tambah Titik Lokasi Baru
-        </a>
+<div class="flex items-center justify-between mb-8">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">Peta Interaktif</h2>
+        <p class="text-sm text-gray-500 mt-1">Kelola titik-titik lokasi penting pada peta desa</p>
     </div>
-
-    <?php if(session()->getFlashdata('success')): ?>
-        <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
-            <?= session()->getFlashdata('success') ?>
-        </div>
-    <?php endif; ?>
-
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border rounded">
-            <thead>
-                <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                    <th class="py-3 px-6 text-left">Nama Lokasi</th>
-                    <th class="py-3 px-6 text-center">Tipe Media</th>
-                    <th class="py-3 px-6 text-center">Koordinat</th>
-                    <th class="py-3 px-6 text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-600 text-sm font-light">
-                <?php foreach($locations as $loc): ?>
-                <tr class="border-b border-gray-200 hover:bg-gray-100">
-                    <td class="py-3 px-6 text-left whitespace-nowrap">
-                        <span class="font-medium"><?= htmlspecialchars($loc->name) ?></span>
-                    </td>
-                    <td class="py-3 px-6 text-center">
-                        <?php if($loc->media_type == 'drone_video'): ?>
-                            <span class="bg-indigo-100 text-indigo-600 py-1 px-3 rounded-full text-xs">Video Drone</span>
-                        <?php elseif($loc->media_type == 'photo'): ?>
-                            <span class="bg-blue-100 text-blue-600 py-1 px-3 rounded-full text-xs">Foto</span>
-                        <?php else: ?>
-                            <span class="bg-gray-100 text-gray-600 py-1 px-3 rounded-full text-xs">Tanpa Media</span>
-                        <?php endif; ?>
-                    </td>
-                    <td class="py-3 px-6 text-center text-xs">
-                        <?= $loc->latitude ?>, <?= $loc->longitude ?>
-                    </td>
-                    <td class="py-3 px-6 text-center">
-                        <div class="flex item-center justify-center space-x-2">
-                            <a href="<?= base_url('admin/map/edit/'.$loc->id) ?>" class="transform hover:text-blue-500 hover:scale-110">Edit</a>
-                            <a href="<?= base_url('admin/map/delete/'.$loc->id) ?>" onclick="return confirm('Hapus lokasi ini?')" class="transform hover:text-red-500 hover:scale-110">Hapus</a>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                <?php if(empty($locations)): ?>
-                    <tr>
-                        <td colspan="4" class="py-6 text-center text-gray-500">Belum ada titik lokasi yang ditambahkan.</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+    <a href="<?= base_url('admin/map/create') ?>"
+       class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg shadow-blue-500/25 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Tambah Titik Lokasi
+    </a>
 </div>
 
-</body>
-</html>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <table class="min-w-full">
+        <thead>
+            <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="py-4 px-6 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Nama Lokasi</th>
+                <th class="py-4 px-6 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Jenis Media</th>
+                <th class="py-4 px-6 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Koordinat</th>
+                <th class="py-4 px-6 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+            <?php foreach($locations as $loc): ?>
+            <tr class="hover:bg-gray-50 transition group">
+                <td class="py-4 px-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800"><?= esc($loc->name) ?></p>
+                            <p class="text-xs text-gray-400 mt-0.5 line-clamp-1"><?= esc($loc->description) ?></p>
+                        </div>
+                    </div>
+                </td>
+                <td class="py-4 px-6 text-center">
+                    <?php if($loc->media_type == 'drone_video'): ?>
+                        <span class="inline-flex items-center gap-1 bg-purple-100 text-purple-700 py-1 px-3 rounded-full text-xs font-semibold">🎬 Video Drone</span>
+                    <?php elseif($loc->media_type == 'photo'): ?>
+                        <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-xs font-semibold">📷 Foto</span>
+                    <?php else: ?>
+                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 py-1 px-3 rounded-full text-xs font-semibold">— Tanpa Media</span>
+                    <?php endif; ?>
+                </td>
+                <td class="py-4 px-6 text-center">
+                    <code class="text-xs bg-gray-50 text-gray-600 px-2 py-1 rounded-lg font-mono">
+                        <?= $loc->latitude ?>, <?= $loc->longitude ?>
+                    </code>
+                </td>
+                <td class="py-4 px-6 text-center">
+                    <div class="flex items-center justify-center gap-3">
+                        <a href="<?= base_url('admin/map/edit/'.$loc->id) ?>" title="Edit" class="text-gray-300 hover:text-blue-500 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </a>
+                        <a href="<?= base_url('admin/map/delete/'.$loc->id) ?>" onclick="return confirm('Hapus lokasi ini?')" title="Hapus" class="text-gray-300 hover:text-red-500 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            <?php if(empty($locations)): ?>
+            <tr>
+                <td colspan="4" class="py-16 text-center text-gray-400">
+                    <svg class="w-12 h-12 mx-auto text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                    <p class="font-medium">Belum ada titik lokasi.</p>
+                    <a href="<?= base_url('admin/map/create') ?>" class="text-blue-600 font-semibold hover:underline mt-1 inline-block">Tambah lokasi pertama</a>
+                </td>
+            </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
+<?= $this->endSection() ?>

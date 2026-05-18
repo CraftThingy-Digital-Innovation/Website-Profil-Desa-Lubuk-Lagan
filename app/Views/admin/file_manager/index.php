@@ -1,181 +1,186 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Manager - Desa Lubuk Lagan</title>
-    <!-- Tailwind CSS (for quick styling) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Browser Image Compression -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
-    <!-- FFmpeg.wasm for Video Compression -->
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
-    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
-    <style>
-        .lazy-bg { background-color: #f3f4f6; }
-    </style>
-</head>
-<body class="bg-gray-100 p-8">
+<?= $this->extend('layout/admin') ?>
+<?= $this->section('admin_content') ?>
 
-<div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-6">
-    <h1 class="text-2xl font-bold mb-4 text-gray-800">Manajer File (Media Gallery)</h1>
-    
-    <div class="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
-        <label for="fileUpload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-block transition">
-            Pilih File (Gambar maks 1MB, Video maks 100MB)
-        </label>
-        <input type="file" id="fileUpload" class="hidden" accept="image/*,video/*">
-        <div id="uploadStatus" class="mt-3 text-sm text-gray-600"></div>
-        <div id="progressContainer" class="w-full bg-gray-200 rounded-full h-2.5 mt-2 hidden">
-            <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
-        </div>
-    </div>
+<?php $pageTitle = 'File Manager'; ?>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="gallery">
-        <?php foreach($files as $file): ?>
-            <div class="relative group rounded-lg overflow-hidden border shadow-sm lazy-bg" id="file-<?= $file->id ?>">
-                <?php if (strpos($file->file_type, 'image') !== false): ?>
-                    <img src="<?= base_url($file->file_path) ?>" loading="lazy" class="w-full h-40 object-cover" alt="<?= $file->original_name ?>">
-                <?php elseif (strpos($file->file_type, 'video') !== false): ?>
-                    <video src="<?= base_url($file->file_path) ?>" class="w-full h-40 object-cover" controls preload="none"></video>
-                <?php else: ?>
-                    <div class="w-full h-40 flex items-center justify-center bg-gray-200 text-gray-500 text-xs break-all p-2">
-                        <?= $file->original_name ?>
-                    </div>
-                <?php endif; ?>
-                
-                <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center">
-                    <button onclick="copyToClipboard('<?= base_url($file->file_path) ?>')" class="bg-green-500 text-white text-xs py-1 px-3 rounded mb-2">Copy Link</button>
-                    <button onclick="deleteFile(<?= $file->id ?>)" class="bg-red-500 text-white text-xs py-1 px-3 rounded">Delete</button>
-                </div>
-                <div class="p-2 text-xs text-gray-600 truncate bg-white">
-                    <?= $file->original_name ?> (<?= number_format($file->file_size / 1024, 1) ?> KB)
-                </div>
-            </div>
-        <?php endforeach; ?>
+<div class="flex items-center justify-between mb-8">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">File Manager</h2>
+        <p class="text-sm text-gray-500 mt-1">Upload dan kelola media desa (Gambar → WebP maks 1MB, Video → MP4 maks 100MB)</p>
     </div>
 </div>
 
+<!-- Upload Zone -->
+<div class="bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-200 hover:border-blue-400 transition-colors p-8 text-center mb-8 cursor-pointer group" id="dropZone">
+    <input type="file" id="fileUpload" class="hidden" accept="image/*,video/*">
+    <label for="fileUpload" class="cursor-pointer">
+        <div class="w-16 h-16 rounded-2xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center mx-auto mb-4 transition">
+            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+        </div>
+        <p class="text-gray-700 font-semibold text-lg">Klik atau seret file ke sini</p>
+        <p class="text-gray-400 text-sm mt-1">Gambar dikompresi ke WebP (maks 1MB) · Video dikompresi ke MP4 (maks 100MB)</p>
+    </label>
+
+    <div id="uploadStatus" class="mt-4 text-sm font-medium text-blue-600 hidden"></div>
+    <div id="progressContainer" class="w-full max-w-sm mx-auto bg-gray-100 rounded-full h-2 mt-3 hidden">
+        <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+    </div>
+</div>
+
+<!-- Gallery Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="gallery">
+    <?php foreach($files as $file): ?>
+    <div class="relative group bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200" id="file-<?= $file->id ?>">
+        <!-- Preview -->
+        <?php if (strpos($file->file_type, 'image') !== false): ?>
+            <img src="<?= base_url($file->file_path) ?>" loading="lazy" class="w-full h-36 object-cover" alt="<?= esc($file->original_name) ?>">
+        <?php elseif (strpos($file->file_type, 'video') !== false): ?>
+            <video src="<?= base_url($file->file_path) ?>" class="w-full h-36 object-cover" preload="none">
+                <div class="w-full h-36 flex items-center justify-center bg-gray-900">
+                    <svg class="w-10 h-10 text-white opacity-50" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+            </video>
+        <?php else: ?>
+            <div class="w-full h-36 flex items-center justify-center bg-gray-50 text-gray-400">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+        <?php endif; ?>
+
+        <!-- Hover Actions -->
+        <div class="absolute inset-0 bg-gray-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-2xl">
+            <button onclick="copyLink('<?= base_url($file->file_path) ?>')"
+                class="bg-white hover:bg-blue-50 text-blue-600 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow">
+                📋 Copy Link
+            </button>
+            <button onclick="deleteFile(<?= $file->id ?>)"
+                class="bg-white hover:bg-red-50 text-red-600 text-xs font-bold py-1.5 px-3 rounded-lg transition shadow">
+                🗑️ Hapus
+            </button>
+        </div>
+
+        <!-- File info -->
+        <div class="p-3 border-t border-gray-50">
+            <p class="text-xs font-semibold text-gray-700 truncate"><?= esc($file->original_name) ?></p>
+            <p class="text-xs text-gray-400 mt-0.5"><?= number_format($file->file_size / 1024, 1) ?> KB</p>
+        </div>
+    </div>
+    <?php endforeach; ?>
+
+    <?php if(empty($files)): ?>
+    <div class="col-span-full py-12 text-center text-gray-400">
+        <svg class="w-12 h-12 mx-auto text-gray-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        <p>Belum ada file. Upload file pertama Anda!</p>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Scripts: Image Compression & FFmpeg -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
+<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+
 <script>
-    const fileUpload = document.getElementById('fileUpload');
-    const uploadStatus = document.getElementById('uploadStatus');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('progressBar');
+const fileUpload    = document.getElementById('fileUpload');
+const uploadStatus  = document.getElementById('uploadStatus');
+const progressCont  = document.getElementById('progressContainer');
+const progressBar   = document.getElementById('progressBar');
 
-    fileUpload.addEventListener('change', async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
+function showStatus(msg, color = 'text-blue-600') {
+    uploadStatus.textContent = msg;
+    uploadStatus.className = `mt-4 text-sm font-medium ${color}`;
+    uploadStatus.classList.remove('hidden');
+}
 
-        let processedFile = file;
+fileUpload.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        progressContainer.classList.remove('hidden');
-        progressBar.style.width = '0%';
+    let processedFile = file;
+    progressCont.classList.remove('hidden');
+    progressBar.style.width = '5%';
 
-        try {
-            if (file.type.startsWith('image/')) {
-                uploadStatus.innerText = "Mengompresi dan mengonversi gambar ke WebP...";
-                // Konfigurasi kompresi browser-image-compression
-                const options = {
-                    maxSizeMB: 1, // Target Maksimal 1MB
-                    maxWidthOrHeight: 1920,
-                    useWebWorker: true,
-                    fileType: 'image/webp',
-                    onProgress: (p) => { progressBar.style.width = p + '%'; }
-                };
-                let compressedBlob = await imageCompression(file, options);
-                
-                // Ganti ekstensi file menjadi .webp
-                const newName = file.name.substring(0, file.name.lastIndexOf('.')) + '.webp';
-                processedFile = new File([compressedBlob], newName, { type: 'image/webp' });
-                
-                uploadStatus.innerText = "Kompresi gambar WebP selesai. Mengunggah...";
-                
-            } else if (file.type.startsWith('video/')) {
-                uploadStatus.innerText = "Memuat modul kompresi video pintar (FFmpeg)...";
-                const { FFmpeg } = FFmpegWASM;
-                const { fetchFile } = FFmpegUtil;
-                const ffmpeg = new FFmpeg();
-                
-                ffmpeg.on('progress', ({ progress }) => {
-                    const percent = Math.round(progress * 100);
-                    progressBar.style.width = percent + '%';
-                    uploadStatus.innerText = `Mengompresi video: ${percent}% (Proses ini memakan waktu, harap tunggu...)`;
-                });
+    try {
+        if (file.type.startsWith('image/')) {
+            showStatus('Mengompresi dan mengonversi gambar ke WebP…');
+            const compressed = await imageCompression(file, {
+                maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true,
+                fileType: 'image/webp',
+                onProgress: p => { progressBar.style.width = p + '%'; }
+            });
+            const newName = file.name.replace(/\.[^.]+$/, '.webp');
+            processedFile = new File([compressed], newName, { type: 'image/webp' });
+            showStatus('Kompresi gambar selesai. Mengunggah…');
 
-                // Load single-thread core to avoid SharedArrayBuffer header issues
-                await ffmpeg.load({
-                    coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
-                    wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
-                });
+        } else if (file.type.startsWith('video/')) {
+            showStatus('Memuat modul FFmpeg untuk kompresi video…');
+            const { FFmpeg } = FFmpegWASM;
+            const { fetchFile } = FFmpegUtil;
+            const ffmpeg = new FFmpeg();
 
-                const inputExt = file.name.substring(file.name.lastIndexOf('.'));
-                const inputName = 'input' + inputExt;
-                const outputName = 'output.mp4';
-                
-                await ffmpeg.writeFile(inputName, await fetchFile(file));
-                
-                // Compress video to mp4, crf 28 (kompresi tinggi), audio aac
-                uploadStatus.innerText = "Mulai proses konversi dan kompresi video...";
-                await ffmpeg.exec(['-i', inputName, '-vcodec', 'libx264', '-crf', '28', '-preset', 'ultrafast', '-c:a', 'aac', '-b:a', '128k', outputName]);
-                
-                const data = await ffmpeg.readFile(outputName);
-                const newName = file.name.substring(0, file.name.lastIndexOf('.')) + '.mp4';
-                processedFile = new File([data.buffer], newName, { type: 'video/mp4' });
-                
-                if (processedFile.size > 100 * 1024 * 1024) {
-                    alert("Peringatan: Walaupun telah dikompresi, ukuran video masih melebihi 100MB. Coba unggah video dengan durasi lebih pendek.");
-                    uploadStatus.innerText = "Upload dibatalkan karena melebihi batas 100MB.";
-                    progressContainer.classList.add('hidden');
-                    return;
-                }
-                
-                uploadStatus.innerText = "Kompresi video selesai. Mengunggah...";
-            }
-
-            // Upload ke server via AJAX
-            const formData = new FormData();
-            formData.append('file', processedFile);
-
-            const response = await fetch('<?= base_url('admin/file-manager/upload') ?>', {
-                method: 'POST',
-                body: formData
+            ffmpeg.on('progress', ({ progress }) => {
+                const pct = Math.round(progress * 100);
+                progressBar.style.width = pct + '%';
+                showStatus(`Mengompresi video: ${pct}% — harap tunggu…`);
             });
 
-            const result = await response.json();
-            progressBar.style.width = '100%';
+            await ffmpeg.load({
+                coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+                wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
+            });
 
-            if (result.status === 'success') {
-                uploadStatus.innerText = "Upload Berhasil!";
-                setTimeout(() => location.reload(), 1000); // Reload to show new file
-            } else {
-                uploadStatus.innerText = "Upload Gagal: " + result.message;
+            const ext = file.name.match(/\.[^.]+$/)[0];
+            await ffmpeg.writeFile('input' + ext, await fetchFile(file));
+            await ffmpeg.exec(['-i', 'input'+ext, '-vcodec', 'libx264', '-crf', '28', '-preset', 'ultrafast', '-c:a', 'aac', '-b:a', '128k', 'output.mp4']);
+
+            const data = await ffmpeg.readFile('output.mp4');
+            const newName = file.name.replace(/\.[^.]+$/, '.mp4');
+            processedFile = new File([data.buffer], newName, { type: 'video/mp4' });
+
+            if (processedFile.size > 100 * 1024 * 1024) {
+                showStatus('Video masih melebihi 100MB setelah kompresi. Coba video lebih pendek.', 'text-red-600');
+                progressCont.classList.add('hidden');
+                return;
             }
-
-        } catch (error) {
-            console.error(error);
-            uploadStatus.innerText = "Terjadi kesalahan: " + error.message;
+            showStatus('Kompresi video selesai. Mengunggah…');
         }
-    });
 
-    async function deleteFile(id) {
-        if(!confirm("Hapus file ini?")) return;
-        
-        const response = await fetch(`<?= base_url('admin/file-manager/delete/') ?>${id}`, {
-            method: 'DELETE'
-        });
-        const result = await response.json();
-        if(result.status === 'success') {
-            document.getElementById(`file-${id}`).remove();
+        const formData = new FormData();
+        formData.append('file', processedFile);
+
+        const res    = await fetch('<?= base_url('admin/file-manager/upload') ?>', { method: 'POST', body: formData });
+        const result = await res.json();
+        progressBar.style.width = '100%';
+
+        if (result.status === 'success') {
+            showStatus('✅ Upload berhasil!', 'text-green-600');
+            setTimeout(() => location.reload(), 1200);
         } else {
-            alert(result.message);
+            showStatus('❌ Upload gagal: ' + result.message, 'text-red-600');
         }
+    } catch (err) {
+        console.error(err);
+        showStatus('❌ Terjadi kesalahan: ' + err.message, 'text-red-600');
     }
+});
 
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Link berhasil dicopy!");
-        });
+async function deleteFile(id) {
+    if (!confirm('Hapus file ini secara permanen?')) return;
+    const res    = await fetch(`<?= base_url('admin/file-manager/delete/') ?>${id}`, { method: 'DELETE' });
+    const result = await res.json();
+    if (result.status === 'success') {
+        document.getElementById(`file-${id}`).remove();
+    } else {
+        alert(result.message);
     }
+}
+
+function copyLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = event.target;
+        btn.textContent = '✅ Disalin!';
+        setTimeout(() => btn.textContent = '📋 Copy Link', 2000);
+    });
+}
 </script>
-</body>
-</html>
+
+<?= $this->endSection() ?>

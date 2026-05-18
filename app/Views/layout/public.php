@@ -3,7 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'Desa Lubuk Lagan' ?> - Harmoni Alam & Budaya</title>
+    <title><?= $pageTitle ?? ($settings['site_name'] ?? 'Desa Lubuk Lagan') ?> — <?= $settings['site_tagline'] ?? 'Harmoni Alam & Budaya' ?></title>
+    <meta name="description" content="<?= esc($settings['site_description'] ?? '') ?>">
+    <meta name="keywords" content="<?= esc($settings['site_keywords'] ?? '') ?>">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="<?= base_url('images/logo.png') ?>">
+    <link rel="apple-touch-icon" href="<?= base_url('images/logo.png') ?>">
+
+    <!-- Open Graph (WhatsApp, Facebook, Twitter) -->
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="<?= current_url() ?>">
+    <meta property="og:site_name"   content="<?= esc($settings['site_name'] ?? 'Desa Lubuk Lagan') ?>">
+    <meta property="og:title"       content="<?= esc($pageTitle ?? ($settings['site_name'] ?? 'Desa Lubuk Lagan')) ?>">
+    <meta property="og:description" content="<?= esc($settings['site_description'] ?? '') ?>">
+    <meta property="og:image"       content="<?= !empty($settings['site_og_image']) ? esc($settings['site_og_image']) : base_url('images/logo.png') ?>">
+    <meta property="og:image:width" content="500">
+    <meta property="og:image:height" content="500">
+    <meta property="og:locale"      content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary">
+    <meta name="twitter:title"       content="<?= esc($pageTitle ?? ($settings['site_name'] ?? 'Desa Lubuk Lagan')) ?>">
+    <meta name="twitter:description" content="<?= esc($settings['site_description'] ?? '') ?>">
+    <meta name="twitter:image"       content="<?= !empty($settings['site_og_image']) ? esc($settings['site_og_image']) : base_url('images/logo.png') ?>">
     
     <!-- Google Fonts: Playfair Display for elegant headings, Lora for body text (warm, traditional yet professional) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,9 +96,8 @@
     <nav class="fixed w-full z-50 transition-all duration-500 glass-nav shadow-sm" id="navbar">
         <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
-                <a href="<?= base_url('/') ?>" class="text-3xl font-heading font-extrabold text-forest-900 tracking-tight flex items-center gap-2 anime-nav-logo">
-                    <!-- Simple Leaf Icon -->
-                    <svg class="w-8 h-8 text-earth-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12c0-5.52-4.48-10-10-10z" style="display:none;"/><path d="M17.5,2C15.2,2 13.13,3.13 12,5C10.87,3.13 8.8,2 6.5,2C2.86,2 0,4.86 0,8.5C0,14.63 12,22 12,22C12,22 24,14.63 24,8.5C24,4.86 21.14,2 17.5,2M12,19.34C6.54,14.54 2,10.63 2,8.5C2,5.95 4.05,4 6.5,4C8.38,4 10.15,5.18 10.74,6.86H13.25C13.84,5.18 15.61,4 17.5,4C19.95,4 22,5.95 22,8.5C22,10.63 17.45,14.53 12,19.34Z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                <a href="<?= base_url('/') ?>" class="text-2xl font-heading font-extrabold text-forest-900 tracking-tight flex items-center gap-2.5 anime-nav-logo">
+                    <img src="<?= base_url('images/logo.png') ?>" alt="Logo Kabupaten Seluma" class="w-10 h-10 object-contain">
                     Lubuk<span class="text-earth-600">Lagan</span>
                 </a>
                 

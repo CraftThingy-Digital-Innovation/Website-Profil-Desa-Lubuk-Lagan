@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'Dashboard' ?> — Admin Desa Lubuk Lagan</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="<?= base_url('images/logo.png') ?>">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,9 +54,7 @@
     <aside id="sidebar" class="w-64 bg-sidebar text-white flex flex-col flex-shrink-0 overflow-y-auto z-30 shadow-2xl">
         <!-- Logo -->
         <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
-            <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            </div>
+            <img src="<?= base_url('images/logo.png') ?>" alt="Logo Seluma" class="w-9 h-9 object-contain flex-shrink-0">
             <div>
                 <p class="font-heading font-bold text-white text-base leading-tight">Lubuk Lagan</p>
                 <p class="text-xs text-slate-400">Portal Manajemen</p>
