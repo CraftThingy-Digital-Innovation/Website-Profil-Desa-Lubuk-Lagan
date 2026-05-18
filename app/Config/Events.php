@@ -53,3 +53,17 @@ Events::on('pre_system', static function (): void {
         }
     }
 });
+
+Events::on('post_controller_constructor', static function () {
+    if (ENVIRONMENT === 'development' && !is_cli()) {
+        try {
+            $migrate = \Config\Services::migrations();
+            $migrate->latest();
+            
+            $seeder = \Config\Database::seeder();
+            $seeder->call('MainSeeder');
+        } catch (\Throwable $e) {
+            log_message('error', 'Auto-migrate/seed error: ' . $e->getMessage());
+        }
+    }
+});
