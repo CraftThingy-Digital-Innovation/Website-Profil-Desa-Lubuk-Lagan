@@ -68,8 +68,8 @@ Events::on('pre_system', static function () {
             $forge->createDatabase($dbName, true); // true = IF NOT EXISTS
             $dbWithoutName->close();
 
-            $migrate = \Config\Services::migrations();
-            $migrate->latest();
+            // Run migrations for all namespaces (termasuk Shield & Settings)
+            command('migrate --all');
             
             $seeder = \Config\Database::seeder();
             $seeder->call('MainSeeder');
