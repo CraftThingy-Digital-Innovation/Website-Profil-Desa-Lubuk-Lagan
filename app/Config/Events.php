@@ -57,6 +57,17 @@ Events::on('pre_system', static function (): void {
 Events::on('post_controller_constructor', static function () {
     if (ENVIRONMENT === 'development' && !is_cli()) {
         try {
+            // Auto Create Database
+            $dbConfig = config('Database')->default;
+            $dbName = $dbConfig['database'];
+            $customConfig = $dbConfig;
+            $customConfig['database'] = ''; // Connect without selecting a DB
+            
+            $dbWithoutName = \Config\Database::connect($customConfig, false);
+            $forge = \Config\Database::forge($dbWithoutName);
+            $forge->createDatabase($dbName, true); // true = IF NOT EXISTS
+            $dbWithoutName->close();
+
             $migrate = \Config\Services::migrations();
             $migrate->latest();
             
