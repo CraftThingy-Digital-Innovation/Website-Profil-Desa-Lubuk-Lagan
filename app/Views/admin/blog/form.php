@@ -1,242 +1,446 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Berita - Desa Lubuk Lagan</title>
-    <!-- jQuery, Bootstrap (required for Summernote), Summernote -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .note-editor { background: white; }
-    </style>
-</head>
-<body class="bg-gray-100 p-8 font-sans">
+<?= $this->extend('layout/admin') ?>
+<?= $this->section('admin_content') ?>
 
-<div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-6">
-    <!-- Main Form -->
-    <div class="w-full md:w-3/4 bg-white rounded-xl shadow-lg p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-gray-800">Editor Berita</h1>
-            <span id="saveStatus" class="text-sm text-gray-500 font-bold bg-gray-200 px-3 py-1 rounded">Autosave: Idle</span>
+<!-- Summernote Assets (harus di dalam layout, sebelum script Tailwind) -->
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
+
+<style>
+    .note-editor.note-frame { border-radius: 0.75rem; border-color: #e5e7eb; }
+    .note-toolbar { background: #f9fafb !important; border-bottom: 1px solid #e5e7eb !important; border-radius: 0.75rem 0.75rem 0 0 !important; }
+    .note-editable { min-height: 450px !important; font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.8; padding: 1.5rem !important; }
+    .note-status-output { display: none !important; }
+    .note-resizebar { display: none !important; }
+    
+    /* File Manager Modal */
+    #fileManagerModal {
+        display: none; position: fixed; inset: 0; z-index: 9999;
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+        align-items: center; justify-content: center;
+    }
+    #fileManagerModal.open { display: flex; }
+</style>
+
+<!-- File Manager Modal Overlay -->
+<div id="fileManagerModal" role="dialog">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl mx-4 max-h-[85vh] flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+            <div>
+                <h3 class="font-bold text-gray-800 text-lg" id="modalTitle">Pilih File</h3>
+                <p class="text-sm text-gray-400 mt-0.5">Klik file untuk menyisipkan ke konten</p>
+            </div>
+            <button onclick="closeFileManager()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition text-xl font-bold">&times;</button>
+        </div>
+
+        <!-- Upload Quick Area -->
+        <div class="px-6 py-3 border-b border-gray-50 bg-gray-50">
+            <label for="quickUpload" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 cursor-pointer hover:text-blue-700 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                Upload File Baru
+            </label>
+            <input type="file" id="quickUpload" class="hidden" accept="image/*,video/*">
+            <span id="quickUploadStatus" class="ml-3 text-sm text-gray-500"></span>
+        </div>
+
+        <!-- File Grid -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="grid grid-cols-3 md:grid-cols-5 gap-3" id="modalFileGrid">
+                <div class="col-span-full text-center py-10 text-gray-400">
+                    <svg class="w-10 h-10 mx-auto text-gray-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Memuat file...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Page Layout -->
+<div class="flex gap-6 items-start">
+
+    <!-- MAIN EDITOR -->
+    <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+                <a href="<?= base_url('admin/blog') ?>" class="text-gray-400 hover:text-blue-600 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </a>
+                <h2 class="text-xl font-bold text-gray-800">Editor Berita</h2>
+            </div>
+            <span id="saveStatus" class="text-xs font-bold px-3 py-1.5 rounded-full bg-gray-100 text-gray-500 transition-all">
+                ● Idle
+            </span>
         </div>
 
         <input type="hidden" id="blogId" value="<?= $blog->id ?>">
 
-        <div class="mb-4">
-            <label class="block text-gray-700 font-bold mb-2">Judul Berita</label>
-            <input type="text" id="title" class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg font-semibold" value="<?= htmlspecialchars($blog->title) ?>" placeholder="Mulai ketik deskripsi atau konten, ini akan otomatis terisi...">
-        </div>
+        <div class="space-y-4">
+            <!-- Judul -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Judul Artikel</label>
+                <input type="text" id="title"
+                    class="w-full text-xl font-bold text-gray-800 border-0 outline-none placeholder-gray-300 bg-transparent"
+                    value="<?= htmlspecialchars($blog->title) ?>"
+                    placeholder="Tulis judul yang menarik dan informatif...">
+            </div>
 
-        <div class="mb-4">
-            <label class="block text-gray-700 font-bold mb-2">Slug (URL)</label>
-            <input type="text" id="slug" class="w-full border p-2 rounded bg-gray-50 focus:outline-none" value="<?= htmlspecialchars($blog->slug) ?>" readonly title="Diisi otomatis dari Judul">
-        </div>
+            <!-- Slug -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 px-5 py-3 flex items-center gap-3">
+                <span class="text-xs font-bold text-gray-400 whitespace-nowrap">URL Artikel:</span>
+                <span class="text-gray-300 text-sm">/baca/</span>
+                <input type="text" id="slug"
+                    class="flex-1 text-sm text-blue-500 border-0 outline-none bg-transparent font-mono"
+                    value="<?= htmlspecialchars($blog->slug) ?>" readonly>
+                <button onclick="document.getElementById('slug').removeAttribute('readonly'); document.getElementById('slug').focus();"
+                    class="text-xs text-gray-400 hover:text-blue-500 transition flex-shrink-0">Edit</button>
+            </div>
 
-        <div class="mb-4">
-            <label class="block text-gray-700 font-bold mb-2">Konten</label>
-            <textarea id="content"><?= $blog->content ?></textarea>
+            <!-- Summernote Editor -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <textarea id="content"><?= $blog->content ?></textarea>
+            </div>
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="w-full md:w-1/4 flex flex-col gap-6">
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <h2 class="font-bold text-gray-800 mb-2">Status Publikasi</h2>
-            <select id="status" class="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="draft" <?= $blog->status == 'draft' ? 'selected' : '' ?>>Draft (Sembunyikan)</option>
-                <option value="public" <?= $blog->status == 'public' ? 'selected' : '' ?>>Publik (Tampilkan)</option>
-            </select>
+    <!-- SIDEBAR PANEL -->
+    <div class="w-72 flex-shrink-0 space-y-4">
 
-            <h2 class="font-bold text-gray-800 mb-2">SEO Score</h2>
-            <div class="text-3xl font-black mb-2" id="seoScoreText">0/100</div>
-            <input type="hidden" id="seoScore" value="<?= $blog->seo_score ?>">
-            <p class="text-xs text-gray-500 mb-4" id="seoFeedback">Ketik sesuatu untuk menilai SEO.</p>
+        <!-- Status Publikasi -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Status Publikasi</h3>
+            <select id="status" class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-3 py-2.5 text-sm outline-none transition mb-3">
+                <option value="draft"  <?= $blog->status == 'draft'  ? 'selected' : '' ?>>📝 Draft — Tersembunyi</option>
+                <option value="public" <?= $blog->status == 'public' ? 'selected' : '' ?>>🌐 Publik — Tayang</option>
+            </select>
+            <button onclick="autoSavePost()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition">
+                Simpan Sekarang
+            </button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="font-bold text-gray-800">Deskripsi SEO</h2>
-                <label class="text-xs flex items-center gap-1 cursor-pointer font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                    <input type="checkbox" id="autoSeoToggle" <?= empty($blog->description) ? 'checked' : '' ?>> AUTO
+        <!-- SEO Score -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Skor SEO</h3>
+            <div class="flex items-end gap-2 mb-2">
+                <span id="seoScoreText" class="text-4xl font-black text-gray-800">0</span>
+                <span class="text-gray-300 text-lg mb-1">/100</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2 mb-3">
+                <div id="seoBar" class="h-2 rounded-full transition-all duration-500 bg-red-400" style="width: 0%"></div>
+            </div>
+            <input type="hidden" id="seoScore" value="<?= $blog->seo_score ?? 0 ?>">
+            <p class="text-xs text-gray-400 leading-relaxed" id="seoFeedback">Ketik konten untuk memulai analisis SEO.</p>
+        </div>
+
+        <!-- Deskripsi SEO -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Deskripsi SEO</h3>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" id="autoSeoToggle" <?= empty($blog->description) ? 'checked' : '' ?> class="w-3.5 h-3.5">
+                    <span class="text-xs font-semibold text-blue-600">Auto</span>
                 </label>
             </div>
-            <p class="text-xs text-gray-400 mb-2">Berpengaruh untuk Google Search.</p>
-            <textarea id="description" rows="5" class="w-full border p-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Biarkan Auto menyala agar AI meringkas konten..."><?= htmlspecialchars($blog->description ?? '') ?></textarea>
-            
-            <!-- Saran SEO AI -->
-            <div id="seoSuggestion" class="mt-3 text-xs text-blue-700 hidden bg-blue-100 p-3 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-200 transition">
-                <strong class="block mb-1">🤖 Sugesti Otomatis:</strong> 
+            <textarea id="description" rows="4"
+                class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-3 py-2 text-xs outline-none transition resize-none"
+                placeholder="Deskripsi untuk Google (100-160 karakter)..."><?= htmlspecialchars($blog->description ?? '') ?></textarea>
+            <div id="seoSuggestion" class="mt-2 hidden text-xs bg-blue-50 text-blue-700 p-3 rounded-xl border border-blue-100 cursor-pointer hover:bg-blue-100 transition">
+                <strong class="block mb-1">🤖 Sugesti AI:</strong>
                 <span id="autoSuggestionText" class="italic"></span>
-                <div class="mt-2 text-right font-bold">Klik untuk Pakai</div>
+                <div class="mt-2 text-right font-bold text-blue-600">↑ Klik untuk Pakai</div>
             </div>
         </div>
-        
-        <a href="<?= base_url('admin/blog') ?>" class="text-center w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg shadow-md transition">
-            &larr; Kembali ke Daftar
+
+        <!-- Pratinjau -->
+        <a href="<?= base_url('baca/'.$blog->slug) ?>" target="_blank"
+            class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            Pratinjau Artikel
         </a>
     </div>
 </div>
 
+<!-- Image Compression -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script>
+<!-- FFmpeg -->
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
+<script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+
 <script>
-    // Initialize Summernote
-    $(document).ready(function() {
-        $('#content').summernote({
-            height: 500,
-            toolbar: [
-                ['style', ['style']],
-                ['font', ['bold', 'underline', 'clear']],
-                ['color', ['color']],
-                ['para', ['ul', 'ol', 'paragraph']],
-                ['table', ['table']],
-                ['insert', ['link', 'picture', 'video']],
-                ['view', ['fullscreen', 'codeview', 'help']]
-            ],
-            callbacks: {
-                onChange: function(contents, $editable) {
-                    analyzeSEO();
-                    scheduleAutoSave();
+const UPLOAD_URL     = '<?= base_url('admin/file-manager/upload') ?>';
+const FILE_LIST_URL  = '<?= base_url('admin/file-manager') ?>';
+
+let insertMode = 'image'; // 'image' | 'video'
+
+// ============================================================
+// CUSTOM SUMMERNOTE BUTTONS — Upload Gambar & Video ke Server
+// ============================================================
+function buildUploadImageButton(context) {
+    const ui = $.summernote.ui;
+    return ui.button({
+        contents: '<i class="note-icon-picture"></i> Upload Foto',
+        tooltip: 'Upload foto dari komputer ke File Manager',
+        click: () => { insertMode = 'image'; openFileManager('image'); }
+    }).render();
+}
+function buildUploadVideoButton(context) {
+    const ui = $.summernote.ui;
+    return ui.button({
+        contents: '<svg style="width:14px;height:14px;vertical-align:middle;display:inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Upload Video',
+        tooltip: 'Upload video dari komputer ke File Manager',
+        click: () => { insertMode = 'video'; openFileManager('video'); }
+    }).render();
+}
+
+// ============================================================
+// INIT SUMMERNOTE
+// ============================================================
+$(document).ready(function() {
+    $('#content').summernote({
+        height: 480,
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'uploadImage', 'uploadVideo']],
+            ['view', ['fullscreen', 'codeview', 'help']],
+        ],
+        buttons: {
+            uploadImage: buildUploadImageButton,
+            uploadVideo: buildUploadVideoButton,
+        },
+        callbacks: {
+            onChange: function(contents) {
+                analyzeSEO();
+                scheduleAutoSave();
+            }
+        }
+    });
+});
+
+// ============================================================
+// FILE MANAGER MODAL
+// ============================================================
+let fileManagerFiles = [];
+
+async function openFileManager(mode) {
+    insertMode = mode;
+    document.getElementById('modalTitle').textContent = mode === 'image' ? 'Pilih atau Upload Foto' : 'Pilih atau Upload Video';
+    document.getElementById('fileManagerModal').classList.add('open');
+    await loadFileList(mode);
+}
+
+function closeFileManager() {
+    document.getElementById('fileManagerModal').classList.remove('open');
+}
+
+async function loadFileList(filterType = null) {
+    const grid = document.getElementById('modalFileGrid');
+    grid.innerHTML = '<div class="col-span-full text-center py-6 text-gray-400">Memuat...</div>';
+
+    try {
+        // We hit the file manager page via fetch and parse won't work for JSON
+        // Instead, let's use a dedicated API endpoint
+        const res  = await fetch('<?= base_url('admin/file-manager/api/list') ?>');
+        const data = await res.json();
+
+        let files = data.files || [];
+        if (filterType) {
+            files = files.filter(f => f.file_type.startsWith(filterType));
+        }
+
+        if (!files.length) {
+            grid.innerHTML = `<div class="col-span-full text-center py-8 text-gray-400">Belum ada file. Upload di bawah!</div>`;
+            return;
+        }
+
+        grid.innerHTML = files.map(f => `
+            <div class="group rounded-xl overflow-hidden border border-gray-100 cursor-pointer hover:border-blue-400 hover:shadow-md transition"
+                 onclick="insertFile('${f.url}', '${f.file_type}', '${f.original_name}')">
+                ${f.file_type.startsWith('image')
+                    ? `<img src="${f.url}" loading="lazy" class="w-full h-24 object-cover">`
+                    : `<div class="w-full h-24 flex items-center justify-center bg-gray-900 text-white text-3xl">▶</div>`
                 }
-            }
-        });
-    });
-
-    const titleEl = document.getElementById('title');
-    const slugEl = document.getElementById('slug');
-    const descEl = document.getElementById('description');
-    const statusEl = document.getElementById('status');
-    const saveStatus = document.getElementById('saveStatus');
-    const seoScoreText = document.getElementById('seoScoreText');
-    const seoScoreInput = document.getElementById('seoScore');
-    const seoFeedback = document.getElementById('seoFeedback');
-    const autoSeoToggle = document.getElementById('autoSeoToggle');
-    const seoSuggestion = document.getElementById('seoSuggestion');
-    const autoSuggestionText = document.getElementById('autoSuggestionText');
-
-    let typingTimer;
-
-    // Auto-generate Slug & trigger analysis
-    titleEl.addEventListener('input', function() {
-        slugEl.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        analyzeSEO();
-        scheduleAutoSave();
-    });
-    
-    statusEl.addEventListener('change', scheduleAutoSave);
-    
-    // User manual type on Description
-    descEl.addEventListener('input', () => {
-        if (autoSeoToggle.checked) autoSeoToggle.checked = false; // Turn off auto if manual edit
-        analyzeSEO();
-        scheduleAutoSave();
-    });
-
-    // Toggle Auto SEO
-    autoSeoToggle.addEventListener('change', function() {
-        if(this.checked) {
-            seoSuggestion.classList.add('hidden');
-            analyzeSEO();
-            scheduleAutoSave();
-        }
-    });
-
-    // Click suggestion to apply
-    seoSuggestion.addEventListener('click', function() {
-        descEl.value = autoSuggestionText.innerText;
-        autoSeoToggle.checked = true;
-        this.classList.add('hidden');
-        analyzeSEO();
-        scheduleAutoSave();
-    });
-
-    function analyzeSEO() {
-        let score = 0;
-        let feedback = [];
-        
-        const title = titleEl.value;
-        const contentHtml = $('#content').summernote('code');
-        const contentText = contentHtml.replace(/<\/?[^>]+(>|$)/g, "").replace(/&nbsp;/ig, " ").trim();
-        const desc = descEl.value;
-
-        // Auto Generate Title from Description if title is draft/empty
-        if ((title === 'Draft Tanpa Judul' || title.length === 0) && desc.length > 5) {
-            titleEl.value = desc.substring(0, 40) + '...';
-            slugEl.value = titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        }
-        
-        // Auto Generate Title from Content if both Title & Desc are empty
-        if ((titleEl.value === 'Draft Tanpa Judul' || titleEl.value.length === 0) && contentText.length > 5) {
-            titleEl.value = contentText.substring(0, 40) + '...';
-            slugEl.value = titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        }
-
-        // Sugesti Auto Description dari Konten
-        let suggestedDesc = contentText.substring(0, 150).trim();
-        if (autoSeoToggle.checked && suggestedDesc.length > 0) {
-            descEl.value = suggestedDesc;
-        } else if (suggestedDesc !== desc && suggestedDesc.length > 0 && !autoSeoToggle.checked) {
-            seoSuggestion.classList.remove('hidden');
-            autoSuggestionText.innerText = suggestedDesc;
-        } else {
-            seoSuggestion.classList.add('hidden');
-        }
-
-        // Scoring Logic
-        if (titleEl.value.length > 30 && titleEl.value.length < 60) { score += 30; } else { feedback.push("Panjang judul harus 30-60."); }
-        if (contentText.length > 300) { score += 40; } else { feedback.push("Konten harus >300 karakter."); }
-        if (descEl.value.length > 100 && descEl.value.length <= 160) { score += 30; } else { feedback.push("Deskripsi SEO harus 100-160."); }
-
-        if(score === 100) feedback.push("SEO Sempurna! Lanjutkan.");
-
-        seoScoreInput.value = score;
-        seoScoreText.innerText = score + '/100';
-        seoScoreText.className = "text-3xl font-black mb-2 " + (score > 70 ? "text-green-500" : (score > 40 ? "text-yellow-500" : "text-red-500"));
-        seoFeedback.innerText = feedback.join(" ");
+                <div class="p-2 bg-white">
+                    <p class="text-xs text-gray-600 truncate">${f.original_name}</p>
+                    <p class="text-xs text-gray-400">${(f.file_size/1024).toFixed(1)} KB</p>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        grid.innerHTML = `<div class="col-span-full text-center py-6 text-red-400">Gagal memuat file: ${e.message}</div>`;
     }
+}
 
-    function scheduleAutoSave() {
-        clearTimeout(typingTimer);
-        saveStatus.innerText = "Autosave: Mengetik...";
-        saveStatus.className = "text-sm text-yellow-700 font-bold bg-yellow-200 px-3 py-1 rounded shadow-sm";
-        typingTimer = setTimeout(autoSavePost, 2000); // Debounce 2 seconds
+function insertFile(url, type, name) {
+    if (type.startsWith('image')) {
+        $('#content').summernote('insertImage', url, name);
+    } else {
+        // Insert video as HTML5 video tag
+        const videoHtml = `<div class="video-wrapper" style="margin:1rem 0;"><video controls preload="metadata" style="max-width:100%;border-radius:8px;" src="${url}">Browser Anda tidak mendukung video.</video></div>`;
+        $('#content').summernote('pasteHTML', videoHtml);
     }
+    closeFileManager();
+}
 
-    async function autoSavePost() {
-        saveStatus.innerText = "Autosave: Menyimpan...";
-        saveStatus.className = "text-sm text-blue-700 font-bold bg-blue-200 px-3 py-1 rounded shadow-sm";
-        
-        const formData = new FormData();
-        formData.append('id', document.getElementById('blogId').value);
-        formData.append('title', titleEl.value);
-        formData.append('slug', slugEl.value);
-        formData.append('description', descEl.value);
-        formData.append('content', $('#content').summernote('code'));
-        formData.append('seo_score', seoScoreInput.value);
-        formData.append('status', statusEl.value);
+// ============================================================
+// QUICK UPLOAD (dari modal file manager)
+// ============================================================
+document.getElementById('quickUpload').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        try {
-            const response = await fetch('<?= base_url('admin/blog/autosave') ?>', {
-                method: 'POST',
-                body: formData
+    const statusEl = document.getElementById('quickUploadStatus');
+    statusEl.textContent = 'Memproses...';
+    let processedFile = file;
+
+    try {
+        if (file.type.startsWith('image/')) {
+            statusEl.textContent = 'Mengompresi ke WebP...';
+            const compressed = await imageCompression(file, {
+                maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true,
+                fileType: 'image/webp'
             });
-            const result = await response.json();
-            if (result.status === 'success') {
-                saveStatus.innerText = "Tersimpan pada " + result.last_saved;
-                saveStatus.className = "text-sm text-green-700 font-bold bg-green-200 px-3 py-1 rounded shadow-sm transition-all";
-            }
-        } catch (e) {
-            saveStatus.innerText = "Gagal Menyimpan! Cek Internet.";
-            saveStatus.className = "text-sm text-red-700 font-bold bg-red-200 px-3 py-1 rounded shadow-sm animate-pulse";
+            processedFile = new File([compressed], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' });
+        } else if (file.type.startsWith('video/')) {
+            statusEl.textContent = 'Mengompresi video (mohon tunggu)...';
+            const { FFmpeg } = FFmpegWASM;
+            const { fetchFile } = FFmpegUtil;
+            const ffmpeg = new FFmpeg();
+            await ffmpeg.load({
+                coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+                wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
+            });
+            const ext = file.name.match(/\.[^.]+$/)[0];
+            await ffmpeg.writeFile('input' + ext, await fetchFile(file));
+            await ffmpeg.exec(['-i', 'input'+ext, '-vcodec', 'libx264', '-crf', '28', '-preset', 'ultrafast', '-c:a', 'aac', '-b:a', '128k', 'output.mp4']);
+            const data = await ffmpeg.readFile('output.mp4');
+            processedFile = new File([data.buffer], file.name.replace(/\.[^.]+$/, '.mp4'), { type: 'video/mp4' });
         }
+
+        statusEl.textContent = 'Mengunggah...';
+        const form = new FormData();
+        form.append('file', processedFile);
+        const res = await fetch(UPLOAD_URL, { method: 'POST', body: form });
+        const result = await res.json();
+
+        if (result.status === 'success') {
+            statusEl.textContent = '✅ Upload berhasil!';
+            await loadFileList(insertMode === 'image' ? 'image' : 'video');
+        } else {
+            statusEl.textContent = '❌ Gagal: ' + result.message;
+        }
+    } catch(e) {
+        statusEl.textContent = '❌ Error: ' + e.message;
+    }
+    event.target.value = '';
+});
+
+// Close modal on backdrop click
+document.getElementById('fileManagerModal').addEventListener('click', function(e) {
+    if (e.target === this) closeFileManager();
+});
+
+// ============================================================
+// SEO + AUTOSAVE
+// ============================================================
+const titleEl = document.getElementById('title');
+const slugEl  = document.getElementById('slug');
+const descEl  = document.getElementById('description');
+const statusEl = document.getElementById('status');
+const saveStatus = document.getElementById('saveStatus');
+const seoScoreText  = document.getElementById('seoScoreText');
+const seoScoreInput = document.getElementById('seoScore');
+const seoFeedback   = document.getElementById('seoFeedback');
+const seoBar        = document.getElementById('seoBar');
+const autoSeoToggle = document.getElementById('autoSeoToggle');
+const seoSuggestion = document.getElementById('seoSuggestion');
+const autoSuggestionText = document.getElementById('autoSuggestionText');
+
+let typingTimer;
+
+titleEl.addEventListener('input', () => {
+    slugEl.value = titleEl.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    analyzeSEO(); scheduleAutoSave();
+});
+statusEl.addEventListener('change', scheduleAutoSave);
+descEl.addEventListener('input', () => { if (autoSeoToggle.checked) autoSeoToggle.checked = false; analyzeSEO(); scheduleAutoSave(); });
+autoSeoToggle.addEventListener('change', () => { if (autoSeoToggle.checked) analyzeSEO(); });
+seoSuggestion.addEventListener('click', () => {
+    descEl.value = autoSuggestionText.innerText;
+    autoSeoToggle.checked = true;
+    seoSuggestion.classList.add('hidden');
+    analyzeSEO(); scheduleAutoSave();
+});
+
+function analyzeSEO() {
+    let score = 0, feedback = [];
+    const title = titleEl.value;
+    const contentHtml = $('#content').summernote('code');
+    const contentText = contentHtml.replace(/<\/?[^>]+(>|$)/g, '').replace(/&nbsp;/ig, ' ').trim();
+    const desc = descEl.value;
+
+    if ((title === 'Draft Tanpa Judul' || !title) && contentText.length > 5) {
+        titleEl.value = contentText.substring(0, 50) + '...';
+        slugEl.value = titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     }
 
-    // Initial Analysis
-    setTimeout(analyzeSEO, 500);
+    const suggested = contentText.substring(0, 155).trim();
+    if (autoSeoToggle.checked && suggested) {
+        descEl.value = suggested;
+    } else if (suggested && suggested !== desc && !autoSeoToggle.checked) {
+        seoSuggestion.classList.remove('hidden');
+        autoSuggestionText.innerText = suggested;
+    } else {
+        seoSuggestion.classList.add('hidden');
+    }
+
+    if (title.length >= 30 && title.length <= 60) { score += 30; } else { feedback.push('Judul 30-60 karakter.'); }
+    if (contentText.length > 300) { score += 40; } else { feedback.push('Konten min. 300 karakter.'); }
+    if (desc.length >= 100 && desc.length <= 160) { score += 30; } else { feedback.push('Deskripsi SEO 100-160 karakter.'); }
+    if (score === 100) feedback = ['✅ SEO sempurna!'];
+
+    seoScoreInput.value = score;
+    seoScoreText.innerText = score;
+    seoBar.style.width = score + '%';
+    seoBar.className = 'h-2 rounded-full transition-all duration-500 ' + (score > 70 ? 'bg-green-500' : (score > 40 ? 'bg-yellow-500' : 'bg-red-400'));
+    seoScoreText.className = 'text-4xl font-black ' + (score > 70 ? 'text-green-500' : (score > 40 ? 'text-yellow-500' : 'text-red-400'));
+    seoFeedback.innerText = feedback.join(' ');
+}
+
+function scheduleAutoSave() {
+    clearTimeout(typingTimer);
+    saveStatus.textContent = '● Mengetik...';
+    saveStatus.className = 'text-xs font-bold px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700';
+    typingTimer = setTimeout(autoSavePost, 2000);
+}
+
+async function autoSavePost() {
+    saveStatus.textContent = '● Menyimpan...';
+    saveStatus.className = 'text-xs font-bold px-3 py-1.5 rounded-full bg-blue-100 text-blue-700';
+    const form = new FormData();
+    form.append('id',          document.getElementById('blogId').value);
+    form.append('title',       titleEl.value);
+    form.append('slug',        slugEl.value);
+    form.append('description', descEl.value);
+    form.append('content',     $('#content').summernote('code'));
+    form.append('seo_score',   seoScoreInput.value);
+    form.append('status',      statusEl.value);
+    try {
+        const res    = await fetch('<?= base_url('admin/blog/autosave') ?>', { method: 'POST', body: form });
+        const result = await res.json();
+        if (result.status === 'success') {
+            saveStatus.textContent = '✓ Tersimpan ' + result.last_saved;
+            saveStatus.className = 'text-xs font-bold px-3 py-1.5 rounded-full bg-green-100 text-green-700';
+        }
+    } catch(e) {
+        saveStatus.textContent = '✕ Gagal!';
+        saveStatus.className = 'text-xs font-bold px-3 py-1.5 rounded-full bg-red-100 text-red-700 animate-pulse';
+    }
+}
+
+setTimeout(analyzeSEO, 500);
 </script>
-</body>
-</html>
+
+<?= $this->endSection() ?>

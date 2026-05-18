@@ -14,6 +14,26 @@ class FileManagerController extends BaseAdminController
         return view('admin/file_manager/index', $data);
     }
 
+    /**
+     * API endpoint untuk modal file picker di blog editor.
+     * GET /admin/file-manager/api/list
+     */
+    public function api_list()
+    {
+        $fileModel = new FileManagerModel();
+        $files = $fileModel->orderBy('created_at', 'DESC')->findAll();
+
+        $result = array_map(fn($f) => [
+            'id'            => $f->id,
+            'original_name' => $f->original_name,
+            'file_type'     => $f->file_type,
+            'file_size'     => $f->file_size,
+            'url'           => base_url($f->file_path),
+        ], $files);
+
+        return $this->response->setJSON(['files' => $result]);
+    }
+
     public function upload()
     {
         $file = $this->request->getFile('file');

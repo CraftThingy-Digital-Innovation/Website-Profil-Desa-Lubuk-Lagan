@@ -34,8 +34,9 @@ $routes->group('admin/blog', function($routes) {
 
 // File Manager
 $routes->group('admin/file-manager', function($routes) {
-    $routes->get('/', 'FileManagerController::index');
-    $routes->post('upload', 'FileManagerController::upload');
+    $routes->get('/',         'FileManagerController::index');
+    $routes->get('api/list',  'FileManagerController::api_list');
+    $routes->post('upload',   'FileManagerController::upload');
     $routes->delete('delete/(:num)', 'FileManagerController::delete/$1');
 });
 

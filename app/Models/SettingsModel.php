@@ -22,9 +22,9 @@ class SettingsModel extends Model
     }
 
     /**
-     * Set/update nilai setting.
+     * Set/update nilai setting — gunakan setValue() bukan set() karena set() adalah milik CI4 Model.
      */
-    public function set(string $key, string $value): void
+    public function setValue(string $key, string $value): void
     {
         $existing = $this->where('key', $key)->first();
         if ($existing) {
