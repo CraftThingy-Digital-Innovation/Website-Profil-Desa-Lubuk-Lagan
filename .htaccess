@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Prevent infinite loops
+    RewriteCond %{REQUEST_URI} !^/public/
+    # Redirect all traffic to the public folder
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>
+
+<IfModule mod_env.c>
+    # Make sure CI environment can be set if needed
+    SetEnv CI_ENVIRONMENT production
+</IfModule>

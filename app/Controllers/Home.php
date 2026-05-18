@@ -29,4 +29,37 @@ class Home extends BaseController
 
         return view('public/blog_single', $data);
     }
+
+    public function sejarah()
+    {
+        return view('public/sejarah');
+    }
+
+    public function perangkat()
+    {
+        return view('public/perangkat_desa');
+    }
+
+    public function kkn()
+    {
+        return view('public/kkn');
+    }
+
+    public function blog_list()
+    {
+        $blogModel = new BlogModel();
+        
+        $search = $this->request->getGet('q');
+        if ($search) {
+            $blogModel->like('title', $search)->orLike('description', $search)->orLike('content', $search);
+        }
+
+        $data['blogs'] = $blogModel->where('status', 'public')
+                                   ->orderBy('created_at', 'DESC')
+                                   ->paginate(9);
+        $data['pager'] = $blogModel->pager;
+        $data['search'] = $search;
+
+        return view('public/blog_list', $data);
+    }
 }
