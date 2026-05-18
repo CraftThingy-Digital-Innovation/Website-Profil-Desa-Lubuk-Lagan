@@ -73,37 +73,68 @@
 
         try {
             if (file.type.startsWith('image/')) {
-                uploadStatus.innerText = "Mengompresi gambar...";
+                uploadStatus.innerText = "Mengompresi dan mengonversi gambar ke WebP...";
                 // Konfigurasi kompresi browser-image-compression
                 const options = {
                     maxSizeMB: 1, // Target Maksimal 1MB
                     maxWidthOrHeight: 1920,
                     useWebWorker: true,
+                    fileType: 'image/webp',
                     onProgress: (p) => { progressBar.style.width = p + '%'; }
                 };
-                processedFile = await imageCompression(file, options);
-                uploadStatus.innerText = "Kompresi gambar selesai. Mengunggah...";
+                let compressedBlob = await imageCompression(file, options);
+                
+                // Ganti ekstensi file menjadi .webp
+                const newName = file.name.substring(0, file.name.lastIndexOf('.')) + '.webp';
+                processedFile = new File([compressedBlob], newName, { type: 'image/webp' });
+                
+                uploadStatus.innerText = "Kompresi gambar WebP selesai. Mengunggah...";
                 
             } else if (file.type.startsWith('video/')) {
-                // Untuk video, validasi max size awal (bisa diatur kompresinya dengan FFmpeg)
-                // Implementasi dasar FFmpeg.wasm sangat kompleks dan butuh header khusus (SharedArrayBuffer)
-                // Sebagai demo dasar, kita validasi ukurannya
-                if (file.size > 100 * 1024 * 1024) {
-                    alert("Video melebihi batas 100MB");
-                    uploadStatus.innerText = "Upload dibatalkan.";
+                uploadStatus.innerText = "Memuat modul kompresi video pintar (FFmpeg)...";
+                const { FFmpeg } = FFmpegWASM;
+                const { fetchFile } = FFmpegUtil;
+                const ffmpeg = new FFmpeg();
+                
+                ffmpeg.on('progress', ({ progress }) => {
+                    const percent = Math.round(progress * 100);
+                    progressBar.style.width = percent + '%';
+                    uploadStatus.innerText = `Mengompresi video: ${percent}% (Proses ini memakan waktu, harap tunggu...)`;
+                });
+
+                // Load single-thread core to avoid SharedArrayBuffer header issues
+                await ffmpeg.load({
+                    coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+                    wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
+                });
+
+                const inputExt = file.name.substring(file.name.lastIndexOf('.'));
+                const inputName = 'input' + inputExt;
+                const outputName = 'output.mp4';
+                
+                await ffmpeg.writeFile(inputName, await fetchFile(file));
+                
+                // Compress video to mp4, crf 28 (kompresi tinggi), audio aac
+                uploadStatus.innerText = "Mulai proses konversi dan kompresi video...";
+                await ffmpeg.exec(['-i', inputName, '-vcodec', 'libx264', '-crf', '28', '-preset', 'ultrafast', '-c:a', 'aac', '-b:a', '128k', outputName]);
+                
+                const data = await ffmpeg.readFile(outputName);
+                const newName = file.name.substring(0, file.name.lastIndexOf('.')) + '.mp4';
+                processedFile = new File([data.buffer], newName, { type: 'video/mp4' });
+                
+                if (processedFile.size > 100 * 1024 * 1024) {
+                    alert("Peringatan: Walaupun telah dikompresi, ukuran video masih melebihi 100MB. Coba unggah video dengan durasi lebih pendek.");
+                    uploadStatus.innerText = "Upload dibatalkan karena melebihi batas 100MB.";
                     progressContainer.classList.add('hidden');
                     return;
                 }
-                uploadStatus.innerText = "Menyiapkan upload video...";
-                progressBar.style.width = '50%';
                 
-                // Info: Kompresi video nyata di browser membutuhkan FFmpeg loaded,
-                // Namun untuk kelancaran tanpa membebani browser ekstrem, upload berjalan setelah validasi.
+                uploadStatus.innerText = "Kompresi video selesai. Mengunggah...";
             }
 
             // Upload ke server via AJAX
             const formData = new FormData();
-            formData.append('file', processedFile, processedFile.name);
+            formData.append('file', processedFile);
 
             const response = await fetch('<?= base_url('admin/file-manager/upload') ?>', {
                 method: 'POST',
