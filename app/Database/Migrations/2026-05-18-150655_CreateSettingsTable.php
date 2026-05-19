@@ -16,7 +16,7 @@ class CreateSettingsTable extends Migration
             'updated_at' => ['type' => 'DATETIME', 'null' => true],
         ]);
         $this->forge->addPrimaryKey('id');
-        $this->forge->createTable('settings');
+        $this->forge->createTable('settings', true);
     }
 
     public function down()

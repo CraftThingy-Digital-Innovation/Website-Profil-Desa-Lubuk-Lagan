@@ -38,6 +38,55 @@
     </div>
 </section>
 
+<!-- Media Carousel (Roulette) -->
+<?php if(!empty($carousels)): ?>
+<section class="py-24 bg-white relative z-20 border-b border-earth-100 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 mb-12 text-center anime-fade-up">
+        <h2 class="text-sm font-bold tracking-widest text-earth-600 uppercase mb-3">Galeri Visual</h2>
+        <h3 class="text-4xl md:text-5xl font-heading font-extrabold text-forest-900">Potret Lubuk Lagan</h3>
+        <div class="w-24 h-1 bg-earth-400 mx-auto rounded-full mt-6"></div>
+    </div>
+    
+    <div class="max-w-6xl mx-auto relative rounded-[2.5rem] overflow-hidden shadow-2xl group bg-black" id="carousel-container">
+        <!-- Slides -->
+        <div class="relative h-[60vh] md:h-[70vh] w-full flex transition-transform duration-700 ease-in-out" id="carousel-track">
+            <?php foreach($carousels as $index => $c): ?>
+                <div class="w-full flex-shrink-0 h-full relative" data-index="<?= $index ?>">
+                    <?php if($c->media_type === 'video'): ?>
+                        <video src="<?= base_url($c->media_url) ?>" class="w-full h-full object-cover" autoplay muted loop playsinline></video>
+                    <?php else: ?>
+                        <img src="<?= base_url($c->media_url) ?>" class="w-full h-full object-cover" alt="<?= esc($c->title) ?>">
+                    <?php endif; ?>
+                    
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 flex flex-col justify-end p-10 md:p-16">
+                        <?php if($c->title): ?>
+                            <h4 class="text-white text-3xl md:text-5xl font-heading font-bold drop-shadow-lg mb-2 transform translate-y-4 opacity-0 transition-all duration-500 carousel-text"><?= esc($c->title) ?></h4>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        
+        <!-- Controls -->
+        <?php if(count($carousels) > 1): ?>
+        <button id="prev-slide" class="absolute left-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center text-white transition opacity-0 group-hover:opacity-100">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <button id="next-slide" class="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center text-white transition opacity-0 group-hover:opacity-100">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+        
+        <!-- Indicators -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+            <?php foreach($carousels as $index => $c): ?>
+                <button class="w-3 h-3 rounded-full bg-white/50 transition-all duration-300 carousel-dot" data-target="<?= $index ?>"></button>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <!-- Peta Interaktif -->
 <section id="eksplor" class="py-24 relative z-20 bg-earth-50">
     <div class="max-w-7xl mx-auto px-6">
@@ -48,8 +97,26 @@
             <p class="text-earth-700 max-w-2xl mx-auto text-lg">Sistem Informasi Geografis memetakan seluruh potensi, fasilitas, dan lokasi vital Desa Lubuk Lagan dengan presisi satelit.</p>
         </div>
 
-        <div class="relative rounded-[2rem] overflow-hidden shadow-2xl border-8 border-white group">
-            <div id="map" class="w-full h-[600px] z-10 relative"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Sidebar Lokasi -->
+            <div class="bg-white rounded-[2rem] p-6 shadow-xl border border-earth-100 flex flex-col h-[600px] z-20">
+                <h3 class="font-bold text-forest-900 mb-4 text-xl flex items-center gap-2">
+                    <svg class="w-6 h-6 text-earth-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Daftar Lokasi
+                </h3>
+                <div class="relative mb-4">
+                    <input type="text" id="map-search" placeholder="Cari fasilitas, tempat..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-earth-200 focus:border-earth-500 focus:ring-2 focus:ring-earth-200 outline-none bg-earth-50 transition">
+                    <svg class="w-5 h-5 text-earth-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar" id="location-list">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+            
+            <!-- Map Container -->
+            <div class="lg:col-span-2 relative rounded-[2rem] overflow-hidden shadow-2xl border-8 border-white group bg-slate-100">
+                <div id="map" class="w-full h-full min-h-[600px] z-10 relative"></div>
+            </div>
         </div>
         
         <div class="mt-12 grid grid-cols-1 gap-6" id="location-cards">
@@ -215,8 +282,11 @@
         iconAnchor: [24, 48]
     });
 
+    let markersMap = {};
+
     locations.forEach(loc => {
         const marker = L.marker([loc.latitude, loc.longitude], { icon: customIcon }).addTo(map);
+        markersMap[loc.id] = marker;
         
         marker.bindTooltip(`<div class="font-heading font-bold text-forest-900 text-lg">${loc.name}</div>`, {
             direction: 'top', offset: [0, -48], className: 'map-tooltip'
@@ -225,8 +295,61 @@
         marker.on('click', () => {
             map.flyTo([loc.latitude, loc.longitude], 17, { animate: true, duration: 1.5 });
             showLocationDetail(loc);
+            highlightListItem(loc.id);
         });
     });
+
+    // Populate Sidebar List
+    const locListContainer = document.getElementById('location-list');
+    const searchInput = document.getElementById('map-search');
+
+    function renderLocationList(filterText = '') {
+        locListContainer.innerHTML = '';
+        const filtered = locations.filter(loc => loc.name.toLowerCase().includes(filterText.toLowerCase()));
+        
+        if (filtered.length === 0) {
+            locListContainer.innerHTML = '<div class="text-center text-earth-400 text-sm py-4">Lokasi tidak ditemukan.</div>';
+            return;
+        }
+
+        filtered.forEach(loc => {
+            const div = document.createElement('div');
+            div.className = 'loc-list-item cursor-pointer p-4 rounded-xl border border-earth-100 hover:border-earth-400 hover:bg-earth-50 transition flex items-center justify-between group bg-white';
+            div.dataset.id = loc.id;
+            div.innerHTML = `
+                <div>
+                    <h5 class="font-bold text-forest-900 group-hover:text-earth-600 transition text-sm">${loc.name}</h5>
+                </div>
+                <svg class="w-4 h-4 text-earth-300 group-hover:text-earth-500 transition transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            `;
+            div.onclick = () => {
+                map.flyTo([loc.latitude, loc.longitude], 17, { animate: true, duration: 1.5 });
+                showLocationDetail(loc);
+                highlightListItem(loc.id);
+                // Trigger tooltip open
+                markersMap[loc.id].openTooltip();
+            };
+            locListContainer.appendChild(div);
+        });
+    }
+
+    function highlightListItem(id) {
+        document.querySelectorAll('.loc-list-item').forEach(el => {
+            el.classList.remove('ring-2', 'ring-earth-400', 'bg-earth-50');
+        });
+        const activeItem = document.querySelector(`.loc-list-item[data-id="${id}"]`);
+        if (activeItem) {
+            activeItem.classList.add('ring-2', 'ring-earth-400', 'bg-earth-50');
+            activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    searchInput.addEventListener('input', (e) => {
+        renderLocationList(e.target.value);
+    });
+
+    // Initial render
+    renderLocationList();
 
     function showLocationDetail(loc) {
         const container = document.getElementById('location-cards');
@@ -284,6 +407,66 @@
             easing: 'easeOutCubic'
         });
     }
+    // --- CAROUSEL LOGIC ---
+    const track = document.getElementById('carousel-track');
+    const slides = document.querySelectorAll('#carousel-track > div');
+    const prevBtn = document.getElementById('prev-slide');
+    const nextBtn = document.getElementById('next-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    
+    if (track && slides.length > 0) {
+        let currentIndex = 0;
+        let interval;
+
+        function updateCarousel(index) {
+            if(index < 0) index = slides.length - 1;
+            if(index >= slides.length) index = 0;
+            currentIndex = index;
+            
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            
+            // Animate text
+            document.querySelectorAll('.carousel-text').forEach(el => {
+                el.classList.remove('translate-y-0', 'opacity-100');
+                el.classList.add('translate-y-4', 'opacity-0');
+            });
+            const activeText = slides[currentIndex].querySelector('.carousel-text');
+            if(activeText) {
+                setTimeout(() => {
+                    activeText.classList.remove('translate-y-4', 'opacity-0');
+                    activeText.classList.add('translate-y-0', 'opacity-100');
+                }, 300);
+            }
+            
+            // Update dots
+            dots.forEach((dot, i) => {
+                if(i === currentIndex) {
+                    dot.classList.add('bg-white', 'w-8');
+                    dot.classList.remove('bg-white/50', 'w-3');
+                } else {
+                    dot.classList.add('bg-white/50', 'w-3');
+                    dot.classList.remove('bg-white', 'w-8');
+                }
+            });
+        }
+
+        if(prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', () => { updateCarousel(currentIndex - 1); resetInterval(); });
+            nextBtn.addEventListener('click', () => { updateCarousel(currentIndex + 1); resetInterval(); });
+            dots.forEach((dot, i) => {
+                dot.addEventListener('click', () => { updateCarousel(i); resetInterval(); });
+            });
+        }
+
+        function resetInterval() {
+            clearInterval(interval);
+            interval = setInterval(() => { updateCarousel(currentIndex + 1); }, 6000);
+        }
+
+        // Init
+        updateCarousel(0);
+        resetInterval();
+    }
 </script>
 
 <style>
@@ -295,7 +478,11 @@
         border-radius: 1rem;
         padding: 0.75rem 1.5rem;
     }
-    .leaflet-container { font-family: inherit; }
+    .leaflet-container { font-family: inherit; z-index: 10 !important; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e1c0b1; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #d0a490; }
 </style>
 
 <?= $this->endSection() ?>

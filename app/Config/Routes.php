@@ -52,6 +52,14 @@ $routes->group('admin/map', function($routes) {
     $routes->get('delete/(:num)', 'MapController::delete/$1');
 });
 
+// Carousel
+$routes->group('admin/carousel', function($routes) {
+    $routes->get('/', 'CarouselController::index');
+    $routes->post('store', 'CarouselController::store');
+    $routes->get('delete/(:num)', 'CarouselController::delete/$1');
+    $routes->get('toggle/(:num)', 'CarouselController::updateStatus/$1');
+});
+
 // Redirect /admin ke dashboard
 $routes->get('admin', function() { return redirect()->to('admin/dashboard'); });
 

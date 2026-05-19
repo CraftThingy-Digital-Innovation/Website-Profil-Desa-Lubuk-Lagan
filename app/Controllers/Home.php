@@ -18,9 +18,11 @@ class Home extends BaseController
     {
         $blogModel = new BlogModel();
         $mapModel  = new VillageLocationModel();
+        $carouselModel = new \App\Models\CarouselModel();
 
         $data['blogs']     = $blogModel->where('status', 'public')->orderBy('created_at', 'DESC')->findAll(3);
         $data['locations'] = $mapModel->findAll();
+        $data['carousels'] = $carouselModel->where('status', 'active')->orderBy('sort_order', 'ASC')->findAll();
         $data['settings']  = $this->getSettings();
 
         return view('public/home', $data);

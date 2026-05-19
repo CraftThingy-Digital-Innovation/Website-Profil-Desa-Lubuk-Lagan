@@ -8,7 +8,7 @@ class SettingsController extends BaseAdminController
 {
     public function index()
     {
-        if ($this->user['role'] !== 'superadmin') {
+        if (!auth()->user()->inGroup('superadmin')) {
             return redirect()->to('admin/dashboard')->with('error', 'Akses ditolak. Anda bukan Superadmin.');
         }
 
@@ -23,7 +23,7 @@ class SettingsController extends BaseAdminController
         }
 
         $data['title'] = 'Pengaturan Sistem';
-        $data['user'] = $this->user;
+        $data['user'] = auth()->user();
         $data['settings'] = $settingsModel->getAll();
 
         return view('admin/settings/index', $data);
