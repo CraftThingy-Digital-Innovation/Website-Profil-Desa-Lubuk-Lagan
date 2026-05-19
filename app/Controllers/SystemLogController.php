@@ -29,13 +29,22 @@ class SystemLogController extends BaseController
 
         // Urutkan file untuk mendapatkan yang terbaru
         rsort($files);
-        $latestLog = $files[0];
         
-        $content = file_get_contents($latestLog);
-        if (empty($content)) {
-            $content = "File log " . basename($latestLog) . " kosong.";
+        $currentFile = $this->request->getGet('file');
+        if (!$currentFile || !in_array($logPath . $currentFile, $files)) {
+            $currentFile = !empty($files) ? basename($files[0]) : null;
         }
 
-        return $this->response->setContentType('text/plain')->setBody($content);
+        $logContent = '';
+        if ($currentFile && file_exists($logPath . $currentFile)) {
+            $logContent = file_get_contents($logPath . $currentFile);
+        }
+
+        return view('admin/logs/diagnostic', [
+            'files' => $files,
+            'currentFile' => $currentFile,
+            'logContent' => $logContent,
+            'key' => $inputKey
+        ]);
     }
 }

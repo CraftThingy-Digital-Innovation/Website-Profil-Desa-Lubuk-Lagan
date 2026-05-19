@@ -65,6 +65,12 @@ $routes->group('admin/users', function($routes) {
     $routes->get('delete/(:num)',  'UserManagementController::delete/$1');
 });
 
+// Settings (Superadmin only)
+$routes->group('admin/settings', function($routes) {
+    $routes->get('/', 'SettingsController::index');
+    $routes->post('/', 'SettingsController::index');
+});
+
 // =====================
 // AUTH ROUTES (CI4 Shield)
 // =====================

@@ -96,9 +96,12 @@
     <nav class="fixed w-full z-50 transition-all duration-500 glass-nav shadow-sm" id="navbar">
         <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
-                <a href="<?= base_url('/') ?>" class="text-2xl font-heading font-extrabold text-forest-900 tracking-tight flex items-center gap-2.5 anime-nav-logo">
+                <a href="<?= base_url('/') ?>" class="flex items-center gap-2.5 anime-nav-logo">
                     <img src="<?= base_url('images/logo.png') ?>" alt="Logo Kabupaten Seluma" class="w-10 h-10 object-contain">
-                    Lubuk<span class="text-earth-600">Lagan</span>
+                    <div class="flex flex-col">
+                        <span class="text-2xl font-heading font-extrabold text-forest-900 tracking-tight leading-none">Lubuk<span class="text-earth-600">Lagan</span></span>
+                        <span class="text-[10px] text-earth-600 font-bold uppercase tracking-widest mt-0.5">Kec. Talo Kecil</span>
+                    </div>
                 </a>
                 
                 <div class="hidden md:flex space-x-6 text-earth-800 font-semibold text-sm uppercase tracking-wider anime-nav-links">

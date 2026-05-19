@@ -48,7 +48,7 @@
             <p class="text-earth-700 max-w-2xl mx-auto text-lg">Sistem Informasi Geografis memetakan seluruh potensi, fasilitas, dan lokasi vital Desa Lubuk Lagan dengan presisi satelit.</p>
         </div>
 
-        <div class="relative rounded-[2rem] overflow-hidden shadow-2xl border-8 border-white group anime-fade-up">
+        <div class="relative rounded-[2rem] overflow-hidden shadow-2xl border-8 border-white group">
             <div id="map" class="w-full h-[600px] z-10 relative"></div>
         </div>
         
