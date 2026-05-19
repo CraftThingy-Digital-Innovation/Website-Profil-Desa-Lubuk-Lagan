@@ -277,32 +277,47 @@ document.getElementById('pickerUploadInput').addEventListener('change', async fu
     const statusText = document.getElementById('pickerStatusText');
     const bar        = document.getElementById('pickerProgress');
     const barFill    = document.getElementById('pickerProgressBar');
+    const origMB     = (file.size / (1024 * 1024)).toFixed(2);
     
     bar.classList.remove('hidden');
     barFill.style.width = '5%';
-    statusText.textContent = `Mengunggah ${file.name}...`;
+
+    let fileToUpload = file;
+    if (file.type.startsWith('image/')) {
+        statusText.textContent = `⚙️ Mengkompresi ${file.name} (${origMB} MB)...`;
+        fileToUpload = await compressImageClientSide(file);
+        const compMB = (fileToUpload.size / (1024 * 1024)).toFixed(2);
+        statusText.textContent = `📦 Terkompresi: ${origMB} MB → ${compMB} MB. Mengunggah...`;
+    } else {
+        statusText.textContent = `🎬 Mengunggah video ${origMB} MB (akan diproses server)...`;
+    }
+    barFill.style.width = '20%';
 
     try {
         const form = new FormData();
-        form.append('file', file);
+        form.append('file', fileToUpload);
         
         await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '<?= base_url('admin/file-manager/upload') ?>');
             xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable) {
-                    const percentComplete = Math.round((e.loaded / e.total) * 100);
-                    barFill.style.width = percentComplete + '%';
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    // Map upload progress to 20-90% of total bar
+                    barFill.style.width = (20 + Math.round(pct * 0.7)) + '%';
                     const loadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
                     const totalMB = (e.total / (1024 * 1024)).toFixed(2);
-                    statusText.textContent = `Mengunggah ${loadedMB} MB / ${totalMB} MB (${percentComplete}%) - Memproses di server...`;
+                    statusText.textContent = `⬆️ Mengunggah ${loadedMB} / ${totalMB} MB (${pct}%)`;
                 }
             };
             xhr.onload = () => {
+                barFill.style.width = '95%';
+                statusText.textContent = '⚙️ Server memproses...';
                 try {
                     const result = JSON.parse(xhr.responseText);
                     if (result.status === 'success') {
-                        statusText.textContent = '✅ Berhasil diunggah dan diproses!';
+                        barFill.style.width = '100%';
+                        statusText.textContent = `✅ Selesai! (${origMB} MB → ${(fileToUpload.size/1024/1024).toFixed(2)} MB)`;
                         resolve(result);
                     } else {
                         reject(new Error(result.message));
@@ -320,20 +335,48 @@ document.getElementById('pickerUploadInput').addEventListener('change', async fu
         statusText.textContent = '❌ Error: ' + err.message;
         barFill.style.width = '0%';
     }
-    setTimeout(() => { bar.classList.add('hidden'); barFill.style.width='0%'; statusText.textContent=''; }, 4000);
+    setTimeout(() => { bar.classList.add('hidden'); barFill.style.width='0%'; statusText.textContent=''; }, 5000);
     this.value = '';
 });
 
 // ============================================================
 // UPLOAD langsung dari drag-drop/paste ke editor
 // ============================================================
+async function compressImageClientSide(file, maxWidth = 1920, quality = 0.82) {
+    return new Promise((resolve) => {
+        // Only compress images, pass through videos
+        if (!file.type.startsWith('image/')) { resolve(file); return; }
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            let { width, height } = img;
+            if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+                resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }));
+            }, 'image/webp', quality);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+    });
+}
+
 function uploadToServer(file, callback) {
-    const form = new FormData();
-    form.append('file', file);
-    fetch('<?= base_url('admin/file-manager/upload') ?>', { method:'POST', body:form })
-        .then(r => r.json())
-        .then(data => { if (data.status === 'success' && callback) callback(data.url); })
-        .catch(console.error);
+    compressImageClientSide(file).then(compressedFile => {
+        const form = new FormData();
+        form.append('file', compressedFile);
+        fetch('<?= base_url('admin/file-manager/upload') ?>', { method:'POST', body:form })
+            .then(r => r.json())
+            .then(data => { if (data.status === 'success' && callback) callback(data.url); })
+            .catch(console.error);
+    });
 }
 
 // ============================================================
