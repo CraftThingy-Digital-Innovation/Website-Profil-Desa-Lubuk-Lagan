@@ -1,9 +1,9 @@
 <?= $this->extend('layout/admin') ?>
 
-<?= $this->section('content') ?>
+<?= $this->section('admin_content') ?>
 <div class="mb-8">
-    <h1 class="text-3xl font-heading font-bold text-forest-900 mb-2">Pengaturan Sistem</h1>
-    <p class="text-earth-600">Konfigurasi variabel utama website dan akses diagnostik.</p>
+    <h1 class="text-3xl font-heading font-bold text-gray-800 mb-2">Pengaturan Sistem</h1>
+    <p class="text-gray-500">Konfigurasi variabel utama website dan akses diagnostik.</p>
 </div>
 
 <?php if (session()->getFlashdata('success')): ?>
@@ -25,32 +25,32 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <!-- Site Info -->
                 <div class="space-y-6">
-                    <h3 class="text-lg font-bold text-forest-900 border-b border-earth-100 pb-2">Informasi Publik</h3>
+                <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-2">Informasi Publik</h3>
                     
                     <div>
                         <label class="block text-sm font-semibold text-earth-700 mb-2">Nama Website</label>
-                        <input type="text" name="site_name" value="<?= esc($settings['site_name'] ?? 'Desa Lubuk Lagan') ?>" class="w-full px-4 py-3 rounded-xl border border-earth-200 focus:border-earth-500 focus:ring-2 focus:ring-earth-200 transition outline-none">
+                        <input type="text" name="site_name" value="<?= esc($settings['site_name'] ?? 'Desa Lubuk Lagan') ?>" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition outline-none">
                     </div>
                     
                     <div>
                         <label class="block text-sm font-semibold text-earth-700 mb-2">Tagline Singkat</label>
-                        <input type="text" name="site_tagline" value="<?= esc($settings['site_tagline'] ?? 'Harmoni Alam & Budaya') ?>" class="w-full px-4 py-3 rounded-xl border border-earth-200 focus:border-earth-500 focus:ring-2 focus:ring-earth-200 transition outline-none">
+                        <input type="text" name="site_tagline" value="<?= esc($settings['site_tagline'] ?? 'Harmoni Alam & Budaya') ?>" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition outline-none">
                     </div>
                     
                     <div>
                         <label class="block text-sm font-semibold text-earth-700 mb-2">Deskripsi (SEO Meta)</label>
-                        <textarea name="site_description" rows="3" class="w-full px-4 py-3 rounded-xl border border-earth-200 focus:border-earth-500 focus:ring-2 focus:ring-earth-200 transition outline-none"><?= esc($settings['site_description'] ?? '') ?></textarea>
+                        <textarea name="site_description" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition outline-none"><?= esc($settings['site_description'] ?? '') ?></textarea>
                     </div>
                 </div>
 
                 <!-- Keamanan / Sistem -->
                 <div class="space-y-6">
-                    <h3 class="text-lg font-bold text-forest-900 border-b border-earth-100 pb-2">Keamanan & Sistem</h3>
+                    <h3 class="text-lg font-bold text-gray-800 border-b border-gray-100 pb-2">Keamanan & Sistem</h3>
                     
                     <div>
                         <label class="block text-sm font-semibold text-earth-700 mb-2">Password Diagnostik (Log)</label>
                         <div class="flex gap-2">
-                            <input type="text" name="system_log_password" id="log_pw" value="<?= esc($settings['system_log_password'] ?? 'developer123') ?>" class="w-full px-4 py-3 rounded-xl border border-earth-200 focus:border-earth-500 focus:ring-2 focus:ring-earth-200 transition outline-none font-mono text-sm">
+                            <input type="text" name="system_log_password" id="log_pw" value="<?= esc($settings['system_log_password'] ?? 'developer123') ?>" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition outline-none font-mono text-sm">
                         </div>
                         <p class="text-xs text-earth-500 mt-2">Gunakan password ini pada parameter <code>?key=</code> saat mengakses halaman System Logs.</p>
                     </div>
@@ -73,7 +73,7 @@
             </div>
 
             <div class="pt-6 border-t border-earth-100 flex justify-end">
-                <button type="submit" class="bg-forest-800 hover:bg-earth-600 text-white px-8 py-3 rounded-xl font-bold transition shadow-lg hover:shadow-xl flex items-center gap-2">
+                <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold transition shadow-lg hover:shadow-xl flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     Simpan Perubahan
                 </button>
