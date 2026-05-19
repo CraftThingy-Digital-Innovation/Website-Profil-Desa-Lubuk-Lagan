@@ -17,7 +17,7 @@ class SettingsController extends BaseAdminController
         if ($this->request->getMethod() === 'POST') {
             $postData = $this->request->getPost();
             foreach ($postData as $key => $value) {
-                $settingsModel->set($key, $value);
+                $settingsModel->setValue($key, $value);
             }
             return redirect()->to('admin/settings')->with('success', 'Pengaturan berhasil diperbarui.');
         }
