@@ -100,25 +100,33 @@ class FileManagerController extends BaseAdminController
             $newName  = pathinfo($file->getClientName(), PATHINFO_FILENAME) . '_' . uniqid() . '.mp4';
             $destPath = $uploadDir . $newName;
 
-            // Cek apakah FFmpeg tersedia
-            $ffmpegPath = trim(shell_exec('which ffmpeg 2>/dev/null') ?: shell_exec('where ffmpeg 2>nul'));
-            if (!$ffmpegPath) $ffmpegPath = 'ffmpeg'; // fallback ke PATH
+            $ffmpegSuccess = false;
 
-            $tmpMp4 = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'upload_' . uniqid() . '.mp4';
-            $cmd    = escapeshellcmd($ffmpegPath)
-                . ' -i ' . escapeshellarg($tmpPath)
-                . ' -vcodec libx264 -crf 28 -preset fast'
-                . ' -c:a aac -b:a 128k -movflags +faststart'
-                . ' -y ' . escapeshellarg($tmpMp4) . ' 2>&1';
+            // Cek apakah shell_exec tersedia (sering di-disable di shared hosting)
+            if (is_callable('shell_exec') && false === stripos(ini_get('disable_functions'), 'shell_exec')) {
+                // Cek apakah FFmpeg tersedia
+                $ffmpegPath = trim(shell_exec('which ffmpeg 2>/dev/null') ?: shell_exec('where ffmpeg 2>nul'));
+                if (!$ffmpegPath) $ffmpegPath = 'ffmpeg'; // fallback ke PATH
 
-            $ffOutput = shell_exec($cmd);
+                $tmpMp4 = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'upload_' . uniqid() . '.mp4';
+                $cmd    = escapeshellcmd($ffmpegPath)
+                    . ' -i ' . escapeshellarg($tmpPath)
+                    . ' -vcodec libx264 -crf 28 -preset fast'
+                    . ' -c:a aac -b:a 128k -movflags +faststart'
+                    . ' -y ' . escapeshellarg($tmpMp4) . ' 2>&1';
 
-            if (file_exists($tmpMp4) && filesize($tmpMp4) > 0) {
-                rename($tmpMp4, $destPath);
-            } else {
-                // FFmpeg gagal — simpan as-is dengan cek ukuran
+                $ffOutput = shell_exec($cmd);
+
+                if (file_exists($tmpMp4) && filesize($tmpMp4) > 0) {
+                    rename($tmpMp4, $destPath);
+                    $ffmpegSuccess = true;
+                }
+            }
+
+            if (!$ffmpegSuccess) {
+                // FFmpeg gagal atau disable — simpan as-is dengan cek ukuran
                 if ($origSize > 100 * 1024 * 1024) {
-                    return $this->response->setJSON(['status' => 'error', 'message' => 'Video melebihi 100MB dan FFmpeg tidak tersedia untuk kompresi.']);
+                    return $this->response->setJSON(['status' => 'error', 'message' => 'Video melebihi 100MB dan server tidak mendukung kompresi video.']);
                 }
                 $file->move($uploadDir, $newName);
             }
