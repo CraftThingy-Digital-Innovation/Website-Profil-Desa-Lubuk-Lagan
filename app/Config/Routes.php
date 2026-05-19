@@ -33,6 +33,7 @@ $routes->group('admin/blog', function($routes) {
     $routes->get('edit/(:num)', 'BlogController::edit/$1');
     $routes->post('autosave', 'BlogController::autosave');
     $routes->get('delete/(:num)', 'BlogController::delete/$1');
+    $routes->get('preview/(:num)', 'BlogController::preview/$1');
 });
 
 // File Manager

@@ -61,4 +61,19 @@ class BlogController extends BaseAdminController
         $model->delete($id);
         return redirect()->to('/admin/blog');
     }
+
+    /**
+     * Preview draft (bypasses status=public check — admin only).
+     */
+    public function preview($id)
+    {
+        $model = new BlogModel();
+        $data['blog'] = $model->find($id);
+        if (!$data['blog']) throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+
+        $data['is_preview'] = true;
+        $data['settings']   = (new \App\Models\SettingsModel())->getAll();
+
+        return view('public/blog_single', $data);
+    }
 }

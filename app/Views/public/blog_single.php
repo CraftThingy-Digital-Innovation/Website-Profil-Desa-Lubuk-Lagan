@@ -1,6 +1,17 @@
 <?= $this->extend('layout/public') ?>
 <?= $this->section('content') ?>
 
+<?php if(!empty($is_preview)): ?>
+<div class="fixed top-0 inset-x-0 z-[9999] bg-yellow-400 text-yellow-900 text-sm font-bold py-2.5 px-6 flex items-center justify-between shadow-lg">
+    <span class="flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+        PRATINJAU DRAFT — Artikel ini belum dipublikasikan ke publik.
+    </span>
+    <a href="<?= base_url('admin/blog/edit/'.$blog->id) ?>" class="underline hover:no-underline">← Kembali Edit</a>
+</div>
+<div class="h-11"></div><!-- spacer for fixed banner -->
+<?php endif; ?>
+
 <!-- Custom Styles for Summernote Content inside layout -->
 <style>
     .blog-content h1, .blog-content h2, .blog-content h3 {
