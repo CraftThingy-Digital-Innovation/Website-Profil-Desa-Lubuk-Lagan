@@ -16,6 +16,9 @@ $routes->get('perangkat', 'Home::perangkat');
 $routes->get('kkn-107', 'Home::kkn');
 $routes->get('berita', 'Home::blog_list');
 
+// System Logs Endpoint (untuk debug di production, diproteksi password)
+$routes->get('system-logs', 'SystemLogController::index');
+
 // =====================
 // ADMIN ROUTES (dilindungi oleh BaseAdminController)
 // =====================

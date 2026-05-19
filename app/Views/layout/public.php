@@ -114,9 +114,23 @@
                 </a>
                 
                 <!-- Mobile menu button -->
-                <button class="md:hidden text-earth-800 focus:outline-none">
+                <button id="mobile-menu-btn" class="md:hidden text-earth-800 focus:outline-none p-2 rounded-lg hover:bg-earth-100 transition">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-2 border-t border-earth-200/50 pt-4">
+                <div class="flex flex-col space-y-4 font-semibold text-earth-800 uppercase tracking-wider text-sm">
+                    <a href="<?= base_url('/') ?>" class="hover:text-earth-500 transition px-2">Beranda</a>
+                    <a href="<?= base_url('/sejarah') ?>" class="hover:text-earth-500 transition px-2">Sejarah</a>
+                    <a href="<?= base_url('/perangkat') ?>" class="hover:text-earth-500 transition px-2">Pemerintahan</a>
+                    <a href="<?= base_url('/kkn-107') ?>" class="hover:text-earth-500 transition px-2">Galeri KKN</a>
+                    <a href="<?= base_url('/berita') ?>" class="hover:text-earth-500 transition px-2">Kabar Desa</a>
+                    <a href="<?= base_url('admin/dashboard') ?>" class="bg-earth-600 hover:bg-earth-700 text-white text-center px-4 py-3 rounded-xl font-medium transition mt-2 shadow-md">
+                        Portal Admin
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
@@ -201,6 +215,15 @@
                 duration: 800,
                 easing: 'easeOutElastic(1, .8)'
             });
+            
+            // Mobile Menu Toggle
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileBtn && mobileMenu) {
+                mobileBtn.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
         });
     </script>
 </body>
