@@ -19,9 +19,12 @@
             <span class="text-earth-200 text-sm tracking-widest uppercase font-semibold">Selamat Datang di</span>
         </div>
         
-        <h1 class="text-5xl md:text-8xl font-heading font-extrabold text-white mb-6 leading-tight drop-shadow-lg anime-hero-title">
+        <h1 class="text-5xl md:text-8xl font-heading font-extrabold text-white mb-2 leading-tight drop-shadow-lg anime-hero-title">
             Desa Lubuk <span class="text-earth-400">Lagan</span>
         </h1>
+        <div class="text-xl md:text-2xl font-bold tracking-[0.3em] text-earth-300 uppercase mb-8 drop-shadow-md anime-hero-title" style="animation-delay: 200ms;">
+            Kec. Talo Kecil
+        </div>
         
         <p class="text-lg md:text-2xl text-earth-100 mb-10 font-sans font-light max-w-3xl mx-auto drop-shadow anime-hero-text">
             Merajut harmoni antara kelestarian alam, kearifan budaya lokal, dan inovasi teknologi digital untuk kesejahteraan bersama.
