@@ -277,26 +277,50 @@ document.getElementById('pickerUploadInput').addEventListener('change', async fu
     const statusText = document.getElementById('pickerStatusText');
     const bar        = document.getElementById('pickerProgress');
     const barFill    = document.getElementById('pickerProgressBar');
-    statusText.textContent = 'Mengunggah dan mengompresi di server...';
+    
     bar.classList.remove('hidden');
-    barFill.style.width = '30%';
+    barFill.style.width = '5%';
+    statusText.textContent = `Mengunggah ${file.name}...`;
 
     try {
         const form = new FormData();
         form.append('file', file);
-        const res    = await fetch('<?= base_url('admin/file-manager/upload') ?>', { method:'POST', body: form });
-        barFill.style.width = '100%';
-        const result = await res.json();
-        if (result.status === 'success') {
-            statusText.textContent = '✅ Berhasil!';
-            await loadPickerFiles(currentPickerMode);
-        } else {
-            statusText.textContent = '❌ ' + result.message;
-        }
+        
+        await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '<?= base_url('admin/file-manager/upload') ?>');
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    barFill.style.width = percentComplete + '%';
+                    const loadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
+                    const totalMB = (e.total / (1024 * 1024)).toFixed(2);
+                    statusText.textContent = `Mengunggah ${loadedMB} MB / ${totalMB} MB (${percentComplete}%) - Memproses di server...`;
+                }
+            };
+            xhr.onload = () => {
+                try {
+                    const result = JSON.parse(xhr.responseText);
+                    if (result.status === 'success') {
+                        statusText.textContent = '✅ Berhasil diunggah dan diproses!';
+                        resolve(result);
+                    } else {
+                        reject(new Error(result.message));
+                    }
+                } catch(err) {
+                    reject(new Error('Respons server tidak valid.'));
+                }
+            };
+            xhr.onerror = () => reject(new Error('Terjadi kesalahan jaringan.'));
+            xhr.send(form);
+        });
+
+        await loadPickerFiles(currentPickerMode);
     } catch(err) {
         statusText.textContent = '❌ Error: ' + err.message;
+        barFill.style.width = '0%';
     }
-    setTimeout(() => { bar.classList.add('hidden'); barFill.style.width='0%'; statusText.textContent=''; }, 3000);
+    setTimeout(() => { bar.classList.add('hidden'); barFill.style.width='0%'; statusText.textContent=''; }, 4000);
     this.value = '';
 });
 
