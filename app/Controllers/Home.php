@@ -9,6 +9,12 @@ use App\Models\VillageOfficerModel;
 
 class Home extends BaseController
 {
+    public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
+    {
+        parent::initController($request, $response, $logger);
+        helper('blog');
+    }
+
     private function getSettings(): array
     {
         $sm = new SettingsModel();

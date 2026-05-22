@@ -71,6 +71,7 @@ class BlogController extends BaseAdminController
             'seo_score'    => $this->request->getPost('seo_score'),
             'status'       => $this->request->getPost('status'),
             'published_at' => $this->request->getPost('published_at') ?: null,
+            'thumbnail'    => $this->request->getPost('thumbnail') ?: null,
         ]);
         return $this->response->setJSON(['status' => 'success', 'last_saved' => date('H:i:s')]);
     }

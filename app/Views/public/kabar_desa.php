@@ -23,10 +23,8 @@
         <article class="bg-white rounded-[2rem] shadow-sm border border-earth-100 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 anime-card opacity-0 group">
             <!-- Cover image (extract from content) -->
             <div class="relative overflow-hidden h-52 bg-earth-100">
-                <?php
-                preg_match('/<img[^>]+src=["\']([^"\']+)["\']/', $blog->content ?? '', $imgMatch);
-                $thumb = $imgMatch[1] ?? null;
-                ?>
+                <!-- Cover: explicit thumbnail → first img in content → placeholder -->
+                <?php $thumb = blog_thumbnail($blog); ?>
                 <?php if ($thumb): ?>
                     <img src="<?= esc($thumb) ?>" alt="<?= esc($blog->title) ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
                 <?php else: ?>

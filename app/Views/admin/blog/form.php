@@ -139,6 +139,34 @@
             <p class="text-xs text-gray-400 leading-relaxed" id="seoFeedback">Ketik konten untuk analisis SEO.</p>
         </div>
 
+        <!-- THUMBNAIL -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Thumbnail</h3>
+
+            <!-- Preview -->
+            <div id="thumbPreviewWrap" class="mb-3 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 aspect-video flex items-center justify-center <?= $blog->thumbnail ? '' : 'hidden' ?>">
+                <img id="thumbPreviewImg"
+                    src="<?= esc($blog->thumbnail ?? '') ?>"
+                    class="w-full h-full object-cover"
+                    alt="Thumbnail">
+            </div>
+            <p id="thumbEmptyNote" class="text-xs text-gray-400 mb-3 <?= $blog->thumbnail ? 'hidden' : '' ?>">
+                Kosong → otomatis pakai foto pertama dari konten.
+            </p>
+
+            <input type="hidden" id="thumbnailUrl" value="<?= esc($blog->thumbnail ?? '') ?>">
+
+            <div class="flex gap-2">
+                <button type="button" onclick="openPicker('thumbnail')"
+                    class="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-xl text-xs transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Pilih Foto
+                </button>
+                <button type="button" onclick="clearThumbnail()"
+                    class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-500 font-bold rounded-xl text-sm transition" title="Hapus thumbnail">&times;</button>
+            </div>
+        </div>
+
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Deskripsi SEO</h3>
@@ -219,10 +247,12 @@ $(document).ready(function() {
 // ============================================================
 async function openPicker(mode) {
     currentPickerMode = mode;
+    const isThumbnail = mode === 'thumbnail';
     document.getElementById('modalTitle').textContent =
+        isThumbnail ? '🖼️ Pilih Thumbnail' :
         mode === 'image' ? '🖼️ Pilih atau Upload Foto' : '🎬 Pilih atau Upload Video';
     document.getElementById('filePickerModal').classList.add('open');
-    await loadPickerFiles(mode);
+    await loadPickerFiles(isThumbnail ? 'image' : mode);
 }
 
 function closePicker() {
@@ -266,6 +296,19 @@ async function loadPickerFiles(filterType) {
 }
 
 function insertFromPicker(url, type, name) {
+    if (currentPickerMode === 'thumbnail') {
+        // Set thumbnail
+        document.getElementById('thumbnailUrl').value = url;
+        const img  = document.getElementById('thumbPreviewImg');
+        const wrap = document.getElementById('thumbPreviewWrap');
+        const note = document.getElementById('thumbEmptyNote');
+        img.src = url;
+        wrap.classList.remove('hidden');
+        note.classList.add('hidden');
+        closePicker();
+        autoSavePost(); // persist immediately
+        return;
+    }
     if (type.startsWith('image')) {
         $('#content').summernote('insertImage', url, name);
     } else {
@@ -274,6 +317,14 @@ function insertFromPicker(url, type, name) {
     }
     closePicker();
     scheduleSave();
+}
+
+function clearThumbnail() {
+    document.getElementById('thumbnailUrl').value = '';
+    document.getElementById('thumbPreviewImg').src = '';
+    document.getElementById('thumbPreviewWrap').classList.add('hidden');
+    document.getElementById('thumbEmptyNote').classList.remove('hidden');
+    autoSavePost();
 }
 
 function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
@@ -508,6 +559,7 @@ async function autoSavePost() {
     form.append('seo_score',    document.getElementById('seoScore').value);
     form.append('status',       statusEl.value);
     form.append('published_at', document.getElementById('publishedAt').value);
+    form.append('thumbnail',    document.getElementById('thumbnailUrl').value);
     try {
         const res    = await fetch('<?= base_url(($category ?? "blog") === "kkn" ? "admin/kkn/autosave" : "admin/blog/autosave") ?>', { method:'POST', body:form });
         const result = await res.json();

@@ -25,11 +25,7 @@
 
             <!-- Cover image (if description contains an image, otherwise show placeholder) -->
             <div class="relative overflow-hidden h-52 bg-earth-100">
-                <?php
-                // Extract first image from content if any
-                preg_match('/<img[^>]+src=["\']([^"\']+)["\']/', $blog->content ?? '', $imgMatch);
-                $thumb = $imgMatch[1] ?? null;
-                ?>
+                <?php $thumb = blog_thumbnail($blog); ?>
                 <?php if ($thumb): ?>
                     <img src="<?= esc($thumb) ?>" alt="<?= esc($blog->title) ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy">
                 <?php else: ?>
