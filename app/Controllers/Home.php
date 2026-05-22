@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\BlogModel;
 use App\Models\VillageLocationModel;
 use App\Models\SettingsModel;
+use App\Models\VillageOfficerModel;
 
 class Home extends BaseController
 {
@@ -49,6 +50,8 @@ class Home extends BaseController
 
     public function perangkat()
     {
+        $officerModel    = new VillageOfficerModel();
+        $data['officers'] = $officerModel->orderBy('level', 'ASC')->orderBy('sort_order', 'ASC')->findAll();
         $data['settings'] = $this->getSettings();
         return view('public/perangkat_desa', $data);
     }

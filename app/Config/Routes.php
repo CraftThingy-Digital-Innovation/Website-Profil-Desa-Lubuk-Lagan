@@ -61,6 +61,16 @@ $routes->group('admin/carousel', function($routes) {
     $routes->get('toggle/(:num)', 'CarouselController::updateStatus/$1');
 });
 
+// Officers (Perangkat Desa)
+$routes->group('admin/officers', function($routes) {
+    $routes->get('/',              'OfficerController::index');
+    $routes->get('create',         'OfficerController::create');
+    $routes->post('store',         'OfficerController::store');
+    $routes->get('edit/(:num)',    'OfficerController::edit/$1');
+    $routes->post('update/(:num)', 'OfficerController::update/$1');
+    $routes->get('delete/(:num)',  'OfficerController::delete/$1');
+});
+
 // Redirect /admin ke dashboard
 $routes->get('admin', function() { return redirect()->to('admin/dashboard'); });
 
