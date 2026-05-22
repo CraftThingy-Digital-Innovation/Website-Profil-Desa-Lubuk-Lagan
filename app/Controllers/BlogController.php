@@ -64,12 +64,13 @@ class BlogController extends BaseAdminController
         $model = new BlogModel();
         $id    = $this->request->getPost('id');
         $model->update($id, [
-            'title'       => $this->request->getPost('title'),
-            'slug'        => $this->request->getPost('slug'),
-            'description' => $this->request->getPost('description'),
-            'content'     => $this->request->getPost('content'),
-            'seo_score'   => $this->request->getPost('seo_score'),
-            'status'      => $this->request->getPost('status'),
+            'title'        => $this->request->getPost('title'),
+            'slug'         => $this->request->getPost('slug'),
+            'description'  => $this->request->getPost('description'),
+            'content'      => $this->request->getPost('content'),
+            'seo_score'    => $this->request->getPost('seo_score'),
+            'status'       => $this->request->getPost('status'),
+            'published_at' => $this->request->getPost('published_at') ?: null,
         ]);
         return $this->response->setJSON(['status' => 'success', 'last_saved' => date('H:i:s')]);
     }

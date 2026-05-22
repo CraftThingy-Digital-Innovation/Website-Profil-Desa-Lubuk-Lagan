@@ -45,7 +45,7 @@
                 <?php if ($blog->description): ?>
                 <p class="text-earth-600 text-xs"><?= esc($blog->description) ?></p>
                 <?php endif; ?>
-                <time class="text-[10px] text-earth-400 mt-2 block"><?= date('d M Y', strtotime($blog->created_at)) ?></time>
+                <time class="text-[10px] text-earth-400 mt-2 block"><?= date('d M Y', strtotime($blog->published_at ?? $blog->created_at)) ?></time>
             </div>
         </div>
         <?php endforeach; ?>
@@ -71,7 +71,7 @@ const kknItems = <?= json_encode(array_map(fn($b) => [
     'title'       => $b->title,
     'description' => $b->description,
     'content'     => $b->content,
-    'date'        => date('d F Y', strtotime($b->created_at)),
+    'date'        => date('d F Y', strtotime($b->published_at ?? $b->created_at)),
     'url'         => base_url('baca/' . $b->slug),
 ], $blogs)) ?>;
 

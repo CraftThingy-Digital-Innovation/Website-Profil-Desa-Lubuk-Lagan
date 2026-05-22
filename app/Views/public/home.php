@@ -159,7 +159,7 @@
                     <div class="absolute top-0 right-0 w-24 h-24 bg-white/50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
                     
                     <div class="text-xs font-bold text-earth-500 mb-4 uppercase tracking-widest">
-                        <?= date('d M Y', strtotime($blog->created_at)) ?>
+                        <?= date('d M Y', strtotime($blog->published_at ?? $blog->created_at)) ?>
                     </div>
                     <h4 class="text-2xl font-heading font-bold text-forest-900 mb-4 group-hover:text-earth-600 transition leading-snug">
                         <a href="<?= base_url('baca/'.$blog->slug) ?>"><?= htmlspecialchars($blog->title) ?></a>

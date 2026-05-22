@@ -112,6 +112,13 @@
                 <option value="draft"  <?= $blog->status == 'draft'  ? 'selected' : '' ?>>📝 Draft — Tersembunyi</option>
                 <option value="public" <?= $blog->status == 'public' ? 'selected' : '' ?>>🌐 Publik — Tayang</option>
             </select>
+
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tanggal Terbit</label>
+            <input type="date" id="publishedAt"
+                value="<?= $blog->published_at ? date('Y-m-d', strtotime($blog->published_at)) : date('Y-m-d') ?>"
+                class="w-full border border-gray-200 focus:border-blue-500 rounded-xl px-3 py-2.5 text-sm outline-none transition mb-3"
+                onchange="autoSavePost()">
+
             <button onclick="autoSavePost()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm transition">
                 Simpan Sekarang
             </button>
@@ -453,15 +460,16 @@ async function autoSavePost() {
     ss.textContent = '● Menyimpan...';
     ss.className = 'text-xs font-bold px-3 py-1.5 rounded-full bg-blue-100 text-blue-700';
     const form = new FormData();
-    form.append('id',          document.getElementById('blogId').value);
-    form.append('title',       titleEl.value);
-    form.append('slug',        slugEl.value);
-    form.append('description', descEl.value);
-    form.append('content',     $('#content').summernote('code'));
-    form.append('seo_score',   document.getElementById('seoScore').value);
-    form.append('status',      statusEl.value);
+    form.append('id',           document.getElementById('blogId').value);
+    form.append('title',        titleEl.value);
+    form.append('slug',         slugEl.value);
+    form.append('description',  descEl.value);
+    form.append('content',      $('#content').summernote('code'));
+    form.append('seo_score',    document.getElementById('seoScore').value);
+    form.append('status',       statusEl.value);
+    form.append('published_at', document.getElementById('publishedAt').value);
     try {
-        const res    = await fetch('<?= base_url('admin/blog/autosave') ?>', { method:'POST', body:form });
+        const res    = await fetch('<?= base_url(($category ?? "blog") === "kkn" ? "admin/kkn/autosave" : "admin/blog/autosave") ?>', { method:'POST', body:form });
         const result = await res.json();
         if (result.status === 'success') {
             ss.textContent = '✓ Tersimpan ' + result.last_saved;

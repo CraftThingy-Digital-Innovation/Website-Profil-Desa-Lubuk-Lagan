@@ -73,7 +73,7 @@ $createUrl = base_url(($isKkn ? 'admin/kkn' : 'admin/blog') . '/create');
                     </div>
                 </td>
                 <td class="py-4 px-6 text-center text-xs text-gray-400 hidden sm:table-cell">
-                    <?= date('d M Y', strtotime($blog->created_at)) ?>
+                    <?= date('d M Y', strtotime($blog->published_at ?? $blog->created_at)) ?>
                 </td>
                 <td class="py-4 px-6 text-center">
                     <div class="flex items-center justify-center gap-3">

@@ -22,7 +22,7 @@ class Home extends BaseController
         $carouselModel = new \App\Models\CarouselModel();
 
         // Home only shows regular blog posts (category=blog)
-        $data['blogs']     = $blogModel->where('category', 'blog')->where('status', 'public')->orderBy('created_at', 'DESC')->findAll(3);
+        $data['blogs']     = $blogModel->where('category', 'blog')->where('status', 'public')->orderBy('published_at', 'DESC')->findAll(3);
         $data['locations'] = $mapModel->findAll();
         $data['carousels'] = $carouselModel->where('status', 'active')->orderBy('sort_order', 'ASC')->findAll();
         $data['settings']  = $this->getSettings();
@@ -60,7 +60,7 @@ class Home extends BaseController
     public function kkn()
     {
         $blogModel        = new BlogModel();
-        $data['blogs']    = $blogModel->where('category', 'kkn')->where('status', 'public')->orderBy('created_at', 'DESC')->findAll();
+        $data['blogs']    = $blogModel->where('category', 'kkn')->where('status', 'public')->orderBy('published_at', 'DESC')->findAll();
         $data['settings'] = $this->getSettings();
         return view('public/kkn', $data);
     }
@@ -68,7 +68,7 @@ class Home extends BaseController
     public function kabar_desa()
     {
         $blogModel        = new BlogModel();
-        $data['blogs']    = $blogModel->where('category', 'blog')->where('status', 'public')->orderBy('created_at', 'DESC')->findAll();
+        $data['blogs']    = $blogModel->where('category', 'blog')->where('status', 'public')->orderBy('published_at', 'DESC')->findAll();
         $data['settings'] = $this->getSettings();
         return view('public/kabar_desa', $data);
     }
@@ -82,7 +82,7 @@ class Home extends BaseController
             $blogModel->like('title', $search)->orLike('description', $search)->orLike('content', $search);
         }
 
-        $data['blogs']    = $blogModel->where('status', 'public')->orderBy('created_at', 'DESC')->paginate(9);
+        $data['blogs']    = $blogModel->where('category', 'blog')->where('status', 'public')->orderBy('published_at', 'DESC')->paginate(9);
         $data['pager']    = $blogModel->pager;
         $data['search']   = $search;
         $data['settings'] = $this->getSettings();

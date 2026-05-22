@@ -43,7 +43,7 @@
                 <p class="text-earth-600 text-sm line-clamp-2 leading-relaxed"><?= esc($blog->description) ?></p>
                 <?php endif; ?>
                 <div class="mt-4 pt-4 border-t border-earth-50 flex items-center justify-between">
-                    <time class="text-xs text-earth-400 font-medium"><?= date('d M Y', strtotime($blog->created_at)) ?></time>
+                    <time class="text-xs text-earth-400 font-medium"><?= date('d M Y', strtotime($blog->published_at ?? $blog->created_at)) ?></time>
                     <a href="<?= base_url('baca/' . $blog->slug) ?>" class="text-earth-500 text-xs font-semibold flex items-center gap-1 hover:text-earth-700 transition">
                         Baca <svg class="w-3 h-3 transform group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </a>

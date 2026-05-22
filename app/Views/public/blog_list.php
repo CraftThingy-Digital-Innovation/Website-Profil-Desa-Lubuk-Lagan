@@ -27,7 +27,7 @@
         <div class="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group flex flex-col anime-card opacity-0 border border-earth-100">
             <div class="p-8 flex-grow relative">
                 <div class="text-xs font-bold text-earth-500 mb-4 uppercase tracking-widest">
-                    <?= date('d M Y', strtotime($blog->created_at)) ?>
+                    <?= date('d M Y', strtotime($blog->published_at ?? $blog->created_at)) ?>
                 </div>
                 <h4 class="text-2xl font-heading font-bold text-forest-900 mb-4 group-hover:text-earth-600 transition leading-snug">
                     <a href="<?= base_url('baca/'.$blog->slug) ?>"><?= htmlspecialchars($blog->title) ?></a>
