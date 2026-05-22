@@ -47,6 +47,9 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
         /* Mobile sidebar overlay */
+        #sidebar-overlay {
+            display: none; /* Hidden by default — always */
+        }
         #sidebar {
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -60,9 +63,6 @@
             }
             #sidebar.open {
                 transform: translateX(0);
-            }
-            #sidebar-overlay {
-                display: none;
             }
             #sidebar-overlay.open {
                 display: block;
