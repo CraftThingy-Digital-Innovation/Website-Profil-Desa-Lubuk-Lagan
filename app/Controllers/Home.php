@@ -6,6 +6,7 @@ use App\Models\BlogModel;
 use App\Models\VillageLocationModel;
 use App\Models\SettingsModel;
 use App\Models\VillageOfficerModel;
+use App\Models\GalleryModel;
 
 class Home extends BaseController
 {
@@ -50,7 +51,7 @@ class Home extends BaseController
 
     public function perangkat()
     {
-        $officerModel    = new VillageOfficerModel();
+        $officerModel     = new VillageOfficerModel();
         $data['officers'] = $officerModel->orderBy('level', 'ASC')->orderBy('sort_order', 'ASC')->findAll();
         $data['settings'] = $this->getSettings();
         return view('public/perangkat_desa', $data);
@@ -58,8 +59,18 @@ class Home extends BaseController
 
     public function kkn()
     {
+        $galleryModel    = new GalleryModel();
+        $data['items']   = $galleryModel->getByCategory('kkn');
         $data['settings'] = $this->getSettings();
         return view('public/kkn', $data);
+    }
+
+    public function kabar_desa()
+    {
+        $galleryModel    = new GalleryModel();
+        $data['items']   = $galleryModel->getByCategory('kabar_desa');
+        $data['settings'] = $this->getSettings();
+        return view('public/kabar_desa', $data);
     }
 
     public function blog_list()

@@ -14,6 +14,7 @@ $routes->get('baca/(:segment)', 'Home::read_blog/$1');
 $routes->get('sejarah', 'Home::sejarah');
 $routes->get('perangkat', 'Home::perangkat');
 $routes->get('kkn-107', 'Home::kkn');
+$routes->get('kabar-desa', 'Home::kabar_desa');
 $routes->get('berita', 'Home::blog_list');
 
 // System Logs Endpoint (untuk debug di production, diproteksi password)
@@ -69,6 +70,26 @@ $routes->group('admin/officers', function($routes) {
     $routes->get('edit/(:num)',    'OfficerController::edit/$1');
     $routes->post('update/(:num)', 'OfficerController::update/$1');
     $routes->get('delete/(:num)',  'OfficerController::delete/$1');
+});
+
+// Gallery — KKN
+$routes->group('admin/gallery/kkn', function($routes) {
+    $routes->get('/',              'GalleryController::index/kkn');
+    $routes->get('create',         'GalleryController::create/kkn');
+    $routes->post('store',         'GalleryController::store/kkn');
+    $routes->get('edit/(:num)',    'GalleryController::edit/kkn/$1');
+    $routes->post('update/(:num)', 'GalleryController::update/kkn/$1');
+    $routes->get('delete/(:num)',  'GalleryController::delete/kkn/$1');
+});
+
+// Gallery — Kabar Desa
+$routes->group('admin/gallery/kabar-desa', function($routes) {
+    $routes->get('/',              'GalleryController::index/kabar_desa');
+    $routes->get('create',         'GalleryController::create/kabar_desa');
+    $routes->post('store',         'GalleryController::store/kabar_desa');
+    $routes->get('edit/(:num)',    'GalleryController::edit/kabar_desa/$1');
+    $routes->post('update/(:num)', 'GalleryController::update/kabar_desa/$1');
+    $routes->get('delete/(:num)',  'GalleryController::delete/kabar_desa/$1');
 });
 
 // Redirect /admin ke dashboard
