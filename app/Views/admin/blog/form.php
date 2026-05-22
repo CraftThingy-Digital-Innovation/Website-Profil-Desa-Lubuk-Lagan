@@ -184,6 +184,7 @@ function makePickerBtn(label, icon, mode) {
 $(document).ready(function() {
     $('#content').summernote({
         height: 420,
+        focus: false,
         toolbar: [
             ['style',  ['style']],
             ['font',   ['bold', 'italic', 'underline', 'clear']],
@@ -292,8 +293,16 @@ document.getElementById('pickerUploadInput').addEventListener('change', async fu
     barFill.style.width = '5%';
 
     let fileToUpload = file;
-    if (file.type.startsWith('image/')) {
-        statusText.textContent = `⚙️ Mengkompresi ${file.name} (${origMB} MB)...`;
+    // isHeic() checks both MIME type AND file extension (needed because browsers often
+    // set file.type = '' for .heic files, so MIME check alone is insufficient)
+    const isImage = file.type.startsWith('image/') || isHeic(file);
+
+    if (isImage) {
+        if (isHeic(file)) {
+            statusText.textContent = `🔄 Mengkonversi HEIC → WebP (${origMB} MB)... harap tunggu`;
+        } else {
+            statusText.textContent = `⚙️ Mengkompresi ${file.name} (${origMB} MB)...`;
+        }
         fileToUpload = await compressImageClientSide(file);
         const compMB = (fileToUpload.size / (1024 * 1024)).toFixed(2);
         statusText.textContent = `📦 Terkompresi: ${origMB} MB → ${compMB} MB. Mengunggah...`;
