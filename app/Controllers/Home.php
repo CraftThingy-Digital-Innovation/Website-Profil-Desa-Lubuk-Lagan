@@ -6,7 +6,6 @@ use App\Models\BlogModel;
 use App\Models\VillageLocationModel;
 use App\Models\SettingsModel;
 use App\Models\VillageOfficerModel;
-use App\Models\GalleryModel;
 
 class Home extends BaseController
 {
@@ -18,11 +17,12 @@ class Home extends BaseController
 
     public function index()
     {
-        $blogModel = new BlogModel();
-        $mapModel  = new VillageLocationModel();
+        $blogModel     = new BlogModel();
+        $mapModel      = new VillageLocationModel();
         $carouselModel = new \App\Models\CarouselModel();
 
-        $data['blogs']     = $blogModel->where('status', 'public')->orderBy('created_at', 'DESC')->findAll(3);
+        // Home only shows regular blog posts (category=blog)
+        $data['blogs']     = $blogModel->where('category', 'blog')->where('status', 'public')->orderBy('created_at', 'DESC')->findAll(3);
         $data['locations'] = $mapModel->findAll();
         $data['carousels'] = $carouselModel->where('status', 'active')->orderBy('sort_order', 'ASC')->findAll();
         $data['settings']  = $this->getSettings();
@@ -59,16 +59,16 @@ class Home extends BaseController
 
     public function kkn()
     {
-        $galleryModel    = new GalleryModel();
-        $data['items']   = $galleryModel->getByCategory('kkn');
+        $blogModel        = new BlogModel();
+        $data['blogs']    = $blogModel->where('category', 'kkn')->where('status', 'public')->orderBy('created_at', 'DESC')->findAll();
         $data['settings'] = $this->getSettings();
         return view('public/kkn', $data);
     }
 
     public function kabar_desa()
     {
-        $galleryModel    = new GalleryModel();
-        $data['items']   = $galleryModel->getByCategory('kabar_desa');
+        $blogModel        = new BlogModel();
+        $data['blogs']    = $blogModel->where('category', 'blog')->where('status', 'public')->orderBy('created_at', 'DESC')->findAll();
         $data['settings'] = $this->getSettings();
         return view('public/kabar_desa', $data);
     }

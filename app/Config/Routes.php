@@ -27,8 +27,18 @@ $routes->get('system-logs', 'SystemLogController::index');
 // Dashboard
 $routes->get('admin/dashboard', 'DashboardController::index');
 
-// Blog
+// Blog & Berita
 $routes->group('admin/blog', function($routes) {
+    $routes->get('/', 'BlogController::index');
+    $routes->get('create', 'BlogController::create_draft');
+    $routes->get('edit/(:num)', 'BlogController::edit/$1');
+    $routes->post('autosave', 'BlogController::autosave');
+    $routes->get('delete/(:num)', 'BlogController::delete/$1');
+    $routes->get('preview/(:num)', 'BlogController::preview/$1');
+});
+
+// Galeri KKN — sama persis dengan blog, category dideteksi dari URL
+$routes->group('admin/kkn', function($routes) {
     $routes->get('/', 'BlogController::index');
     $routes->get('create', 'BlogController::create_draft');
     $routes->get('edit/(:num)', 'BlogController::edit/$1');
@@ -73,25 +83,6 @@ $routes->group('admin/officers', function($routes) {
 });
 
 // Gallery — KKN
-$routes->group('admin/gallery/kkn', function($routes) {
-    $routes->get('/',              'GalleryController::index/kkn');
-    $routes->get('create',         'GalleryController::create/kkn');
-    $routes->post('store',         'GalleryController::store/kkn');
-    $routes->get('edit/(:num)',    'GalleryController::edit/kkn/$1');
-    $routes->post('update/(:num)', 'GalleryController::update/kkn/$1');
-    $routes->get('delete/(:num)',  'GalleryController::delete/kkn/$1');
-});
-
-// Gallery — Kabar Desa
-$routes->group('admin/gallery/kabar-desa', function($routes) {
-    $routes->get('/',              'GalleryController::index/kabar_desa');
-    $routes->get('create',         'GalleryController::create/kabar_desa');
-    $routes->post('store',         'GalleryController::store/kabar_desa');
-    $routes->get('edit/(:num)',    'GalleryController::edit/kabar_desa/$1');
-    $routes->post('update/(:num)', 'GalleryController::update/kabar_desa/$1');
-    $routes->get('delete/(:num)',  'GalleryController::delete/kabar_desa/$1');
-});
-
 // Redirect /admin ke dashboard
 $routes->get('admin', function() { return redirect()->to('admin/dashboard'); });
 

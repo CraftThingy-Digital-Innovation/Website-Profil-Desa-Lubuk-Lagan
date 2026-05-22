@@ -12,7 +12,7 @@ class BlogModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['title', 'slug', 'description', 'content', 'seo_score', 'status', 'author_id'];
+    protected $allowedFields    = ['title', 'slug', 'description', 'content', 'seo_score', 'status', 'author_id', 'category'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
