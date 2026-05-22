@@ -11,15 +11,29 @@
         <p class="text-earth-700 max-w-2xl mx-auto text-lg">Mengenal para pelayan masyarakat yang berdedikasi membangun Desa Lubuk Lagan.</p>
     </div>
 
-    <?php if (empty($officers)): ?>
-    <div class="text-center py-20 text-earth-400">
-        <p class="text-xl">Data perangkat desa belum tersedia.</p>
-    </div>
+    <?php
+    $structureMode = $settings['officer_structure_mode'] ?? 'dynamic';
+    $structureImage = $settings['officer_structure_image'] ?? '';
+    ?>
+
+    <?php if ($structureMode === 'photo' && !empty($structureImage)): ?>
+        <!-- SINGLE PHOTO MODE -->
+        <div class="max-w-5xl mx-auto bg-white rounded-[2rem] shadow-sm border border-earth-100 p-4 md:p-8 anime-fade-up opacity-0">
+            <div class="relative overflow-hidden rounded-2xl border border-gray-100 shadow-inner">
+                <img src="<?= base_url($structureImage) ?>" alt="Struktur Organisasi Perangkat Desa" class="w-full h-auto object-contain mx-auto" loading="lazy">
+            </div>
+        </div>
     <?php else: ?>
 
-    <!-- ORG CHART TREE -->
-    <div class="org-chart-wrapper overflow-x-auto pb-8">
-        <div class="org-chart" id="orgChart">
+        <?php if (empty($officers)): ?>
+        <div class="text-center py-20 text-earth-400">
+            <p class="text-xl">Data perangkat desa belum tersedia.</p>
+        </div>
+        <?php else: ?>
+
+        <!-- ORG CHART TREE -->
+        <div class="org-chart-wrapper overflow-x-auto pb-8">
+            <div class="org-chart" id="orgChart">
             <?php
             // Build tree from flat list
             $map   = [];
@@ -87,6 +101,7 @@
         </div>
     </div>
 
+    <?php endif; ?>
     <?php endif; ?>
 </section>
 
