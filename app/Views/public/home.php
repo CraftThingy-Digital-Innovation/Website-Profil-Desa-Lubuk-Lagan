@@ -275,14 +275,19 @@
 
     const customIcon = L.divIcon({
         className: 'custom-div-icon',
-        html: `<div class="relative flex h-12 w-12 cursor-pointer group">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-earth-500 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-12 w-12 bg-gradient-to-br from-earth-500 to-earth-700 border-[3px] border-white items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                  </span>
+        html: `<div class="relative flex flex-col items-center cursor-pointer group">
+                  <!-- Pulsing ring behind the pin tip -->
+                  <span class="animate-ping absolute bottom-0 inline-flex h-6 w-6 rounded-full bg-earth-500 opacity-75" style="margin-bottom: -3px;"></span>
+                  <!-- Slim Teardrop Pin -->
+                  <div class="relative z-10 w-6 h-8 bg-gradient-to-b from-earth-500 to-earth-700 rounded-full border-2 border-white shadow-md flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style="border-bottom-right-radius: 0; transform: rotate(-45deg);">
+                      <!-- Inner dot -->
+                      <div class="w-1.5 h-1.5 bg-white rounded-full" style="transform: rotate(45deg);"></div>
+                  </div>
+                  <!-- The tail pointing down -->
+                  <div class="w-0.5 h-1 bg-white relative z-10 -mt-0.5"></div>
                </div>`,
-        iconSize: [48, 48],
-        iconAnchor: [24, 48]
+        iconSize: [24, 36],
+        iconAnchor: [12, 36]
     });
 
     let markersMap = {};
@@ -292,7 +297,7 @@
         markersMap[loc.id] = marker;
         
         marker.bindTooltip(`<div class="font-heading font-bold text-forest-900 text-lg">${loc.name}</div>`, {
-            direction: 'top', offset: [0, -48], className: 'map-tooltip'
+            direction: 'top', offset: [0, -36], className: 'map-tooltip'
         });
 
         marker.on('click', () => {
