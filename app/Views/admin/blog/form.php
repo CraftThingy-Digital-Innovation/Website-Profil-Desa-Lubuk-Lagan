@@ -5,6 +5,8 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.css">
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
+<!-- heic2any: converts HEIC/HEIF (iPhone photos) to WebP/JPEG in the browser -->
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
 <style>
     .note-editor.note-frame { border: 1px solid #e5e7eb !important; border-radius: 0.75rem !important; }
@@ -347,14 +349,44 @@ document.getElementById('pickerUploadInput').addEventListener('change', async fu
 });
 
 // ============================================================
-// UPLOAD langsung dari drag-drop/paste ke editor
+// HEIC DETECTION + UPLOAD
 // ============================================================
+
+/** Returns true if file is HEIC/HEIF (by MIME type or extension) */
+function isHeic(file) {
+    if (file.type === 'image/heic' || file.type === 'image/heif') return true;
+    const ext = file.name.split('.').pop().toLowerCase();
+    return ext === 'heic' || ext === 'heif';
+}
+
+/**
+ * Compress any image to WebP.
+ * HEIC/HEIF files are pre-converted via heic2any before canvas processing.
+ */
 async function compressImageClientSide(file, maxWidth = 1920, quality = 0.82) {
+    // Pass non-images through unchanged
+    if (!file.type.startsWith('image/') && !isHeic(file)) return file;
+
+    // Step 1: If HEIC, convert to a JPEG blob first using heic2any
+    let sourceFile = file;
+    if (isHeic(file)) {
+        try {
+            const jpegBlob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            sourceFile = new File(
+                [Array.isArray(jpegBlob) ? jpegBlob[0] : jpegBlob],
+                file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
+                { type: 'image/jpeg' }
+            );
+        } catch (e) {
+            console.warn('heic2any failed, uploading original:', e);
+            return file; // fallback: upload as-is
+        }
+    }
+
+    // Step 2: Draw onto canvas → export as WebP
     return new Promise((resolve) => {
-        // Only compress images, pass through videos
-        if (!file.type.startsWith('image/')) { resolve(file); return; }
         const img = new Image();
-        const url = URL.createObjectURL(file);
+        const url = URL.createObjectURL(sourceFile);
         img.onload = () => {
             URL.revokeObjectURL(url);
             let { width, height } = img;
@@ -364,8 +396,7 @@ async function compressImageClientSide(file, maxWidth = 1920, quality = 0.82) {
             }
             const canvas = document.createElement('canvas');
             canvas.width = width; canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
             canvas.toBlob((blob) => {
                 resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }));
             }, 'image/webp', quality);
