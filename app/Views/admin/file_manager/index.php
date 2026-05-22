@@ -1,6 +1,9 @@
 <?= $this->extend('layout/admin') ?>
 <?= $this->section('admin_content') ?>
 
+<!-- heic2any: converts HEIC/HEIF (iPhone photos) to WebP in the browser -->
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
 <div class="flex items-center justify-between mb-8">
     <div>
         <h2 class="text-2xl font-bold text-gray-800">File Manager</h2>
@@ -10,7 +13,7 @@
 
 <!-- Upload Zone -->
 <div class="bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-200 hover:border-blue-400 transition-colors p-8 text-center mb-8 group">
-    <input type="file" id="fileUpload" class="hidden" accept="image/*,video/*">
+    <input type="file" id="fileUpload" class="hidden" accept="image/*,video/*,.heic,.heif">
     <label for="fileUpload" class="cursor-pointer block">
         <div class="w-16 h-16 rounded-2xl bg-blue-50 group-hover:bg-blue-100 flex items-center justify-center mx-auto mb-4 transition">
             <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,19 +77,58 @@
 </div>
 
 <script>
-// Upload via XHR agar ada progress bar — kompresi dilakukan PHP server-side
-const fileUpload        = document.getElementById('fileUpload');
-const uploadStatusEl    = document.getElementById('uploadStatus');
-const progressContainer = document.getElementById('progressContainer');
-const progressBar       = document.getElementById('progressBar');
-
-function showStatus(msg, color = 'text-blue-600') {
-    uploadStatusEl.textContent = msg;
-    uploadStatusEl.className   = `mt-4 text-sm font-medium ${color}`;
-    uploadStatusEl.classList.remove('hidden');
+// ============================================================
+// HEIC DETECTION HELPER
+// ============================================================
+function isHeic(file) {
+    if (file.type === 'image/heic' || file.type === 'image/heif') return true;
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    return ext === 'heic' || ext === 'heif';
 }
 
-fileUpload.addEventListener('change', function(event) {
+async function prepareFile(file) {
+    // Not an image/heic → return as-is (video, etc.)
+    if (!file.type.startsWith('image/') && !isHeic(file)) return file;
+
+    let src = file;
+    // Step 1: HEIC → JPEG via heic2any
+    if (isHeic(file)) {
+        showStatus('🔄 Mengkonversi HEIC → WebP... harap tunggu');
+        try {
+            const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+            src = new File(
+                [Array.isArray(blob) ? blob[0] : blob],
+                file.name.replace(/\.(heic|heif)$/i, '.jpg'),
+                { type: 'image/jpeg' }
+            );
+        } catch (e) {
+            console.warn('heic2any failed:', e);
+            return file;
+        }
+    }
+
+    // Step 2: Canvas → WebP
+    return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(src);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            let { width, height } = img;
+            const MAX = 1920;
+            if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; }
+            const canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            canvas.toBlob(blob => {
+                resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }));
+            }, 'image/webp', 0.85);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+    });
+}
+
+fileUpload.addEventListener('change', async function(event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -97,10 +139,20 @@ fileUpload.addEventListener('change', function(event) {
 
     progressContainer.classList.remove('hidden');
     progressBar.style.width = '5%';
-    showStatus(`⏳ Mengunggah "${file.name}"… server akan mengompresi otomatis.`);
+
+    // Convert HEIC client-side before uploading
+    const fileToUpload = await prepareFile(file);
+    const origMB  = (file.size / 1024 / 1024).toFixed(2);
+    const convMB  = (fileToUpload.size / 1024 / 1024).toFixed(2);
+
+    if (isHeic(file)) {
+        showStatus(`📦 Konversi selesai: ${origMB} MB → ${convMB} MB WebP. Mengunggah...`);
+    } else {
+        showStatus(`⏳ Mengunggah "${fileToUpload.name}"… (${convMB} MB)`);
+    }
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', fileToUpload);
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '<?= base_url('admin/file-manager/upload') ?>');
