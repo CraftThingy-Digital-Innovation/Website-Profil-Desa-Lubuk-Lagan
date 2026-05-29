@@ -6,13 +6,16 @@ use App\Models\BlogModel;
 use App\Models\VillageLocationModel;
 use App\Models\SettingsModel;
 use App\Models\VillageOfficerModel;
+use App\Models\HistoryEventModel;
+use App\Models\HistoryInfrastructureModel;
 
 class Home extends BaseController
 {
     public function initController(\CodeIgniter\HTTP\RequestInterface $request, \CodeIgniter\HTTP\ResponseInterface $response, \Psr\Log\LoggerInterface $logger)
     {
         parent::initController($request, $response, $logger);
-        helper('blog');
+        helper(['blog', 'history']);
+        ensure_history_initialized();
     }
 
     private function getSettings(): array
@@ -51,7 +54,13 @@ class Home extends BaseController
 
     public function sejarah()
     {
+        $eventModel = new HistoryEventModel();
+        $infraModel = new HistoryInfrastructureModel();
+
+        $data['events'] = $eventModel->orderBy('sort_order', 'ASC')->findAll();
+        $data['infrastructure'] = $infraModel->orderBy('sort_order', 'ASC')->findAll();
         $data['settings'] = $this->getSettings();
+        
         return view('public/sejarah', $data);
     }
 

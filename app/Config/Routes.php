@@ -102,6 +102,16 @@ $routes->group('admin/settings', function($routes) {
     $routes->post('/', 'SettingsController::index');
 });
 
+// Sejarah (History) CRUD
+$routes->group('admin/history', function($routes) {
+    $routes->get('/', 'HistoryController::index');
+    $routes->post('settings', 'HistoryController::saveSettings');
+    $routes->post('events/store', 'HistoryController::storeEvent');
+    $routes->get('events/delete/(:num)', 'HistoryController::deleteEvent/$1');
+    $routes->post('infrastructure/store', 'HistoryController::storeInfrastructure');
+    $routes->get('infrastructure/delete/(:num)', 'HistoryController::deleteInfrastructure/$1');
+});
+
 // =====================
 // AUTH ROUTES (CI4 Shield)
 // =====================
